@@ -1,592 +1,390 @@
-/* =====================================================
-   BLUEWATER YACHTS
-   REAL BOATLISTING API
-===================================================== */
+// ==========================================
+// BLUEWATER YACHTS - JAVASCRIPT
+// ==========================================
+
+// ------------------------------
+// BOAT API
+// ------------------------------
+
+const BOAT_API = "/api/boats";
 
 
-/* =====================================================
-   ELEMENTS
-===================================================== */
+// ------------------------------
+// WEATHER API
+// ------------------------------
 
-const boatContainer =
-    document.getElementById(
-        "boat-container"
-    );
-
-const sortSelect =
-    document.getElementById(
-        "sort"
-    );
+const locationInput = document.getElementById("location-input");
+const locationButton = document.getElementById("location-button");
 
 
-/* =====================================================
-   BOAT DATA
-===================================================== */
+// Convert wind direction degrees into a compass direction
+function getWindDirection(degrees) {
+    const directions = [
+        "N", "NE", "E", "SE",
+        "S", "SW", "W", "NW"
+    ];
 
-let boats = [];
+    const index = Math.round(degrees / 45) % 8;
 
-
-/* =====================================================
-   GET BOAT TITLE
-===================================================== */
-
-function getBoatTitle(boat) {
-
-    return (
-        boat.title ||
-        `${boat.year || ""} ${boat.make || ""} ${boat.model || ""}`.trim() ||
-        "Boat Listing"
-    );
-
+    return directions[index];
 }
 
 
-/* =====================================================
-   GET BOAT TYPE
-===================================================== */
+// Convert weather code into readable conditions
+function getWeatherDescription(code) {
 
-function getBoatType(boat) {
+    if (code === 0) return "Clear Sky";
+    if (code === 1 || code === 2) return "Partly Cloudy";
+    if (code === 3) return "Cloudy";
+    if (code >= 45 && code <= 48) return "Fog";
+    if (code >= 51 && code <= 57) return "Drizzle";
+    if (code >= 61 && code <= 67) return "Rain";
+    if (code >= 71 && code <= 77) return "Snow";
+    if (code >= 80 && code <= 82) return "Rain Showers";
+    if (code >= 85 && code <= 86) return "Snow Showers";
+    if (code >= 95) return "Thunderstorm";
 
-    return (
-        boat.boatType ||
-        boat.category ||
-        "Boat"
-    );
-
+    return "Unknown";
 }
 
 
-/* =====================================================
-   GET BOAT LENGTH
-===================================================== */
+// Get weather for a location
+async function getWeather(location) {
 
-function getBoatLength(boat) {
+    const status = document.getElementById("weather-status");
 
-    if (
-        boat.length_m === null ||
-        boat.length_m === undefined
-    ) {
+    status.textContent = "Finding location...";
 
-        return "N/A";
+    try {
 
-    }
-
-
-    const feet =
-        Number(
-            boat.length_m
-        ) * 3.28084;
-
-
-    return (
-        feet.toFixed(1) +
-        " ft"
-    );
-
-}
-
-
-/* =====================================================
-   GET PRICE
-===================================================== */
-
-function getBoatPrice(boat) {
-
-    if (
-        boat.priceOnApplication === true
-    ) {
-
-        return "Price on Application";
-
-    }
-
-
-    if (
-        boat.price === null ||
-        boat.price === undefined
-    ) {
-
-        return "Price on Application";
-
-    }
-
-
-    return (
-        boat.currency ||
-        "AUD"
-    ) +
-    " $" +
-    Number(
-        boat.price
-    ).toLocaleString();
-
-}
-
-
-/* =====================================================
-   GET LOCATION
-===================================================== */
-
-function getBoatLocation(boat) {
-
-    if (
-        !boat.location
-    ) {
-
-        return "Location unavailable";
-
-    }
-
-
-    if (
-        typeof boat.location === "string"
-    ) {
-
-        return boat.location;
-
-    }
-
-
-    const parts = [];
-
-
-    if (
-        boat.location.city
-    ) {
-
-        parts.push(
-            boat.location.city
+        // Find the location
+        const geoResponse = await fetch(
+            `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`
         );
 
-    }
+        const geoData = await geoResponse.json();
+
+        if (!geoData.results || geoData.results.length === 0) {
+            throw new Error("Location not found.");
+        }
+
+        const place = geoData.results[0];
+
+        const latitude = place.latitude;
+        const longitude = place.longitude;
+
+        const city = place.name;
+        const country = place.country;
+
+        status.textContent = "Loading current sailing conditions...";
 
 
-    if (
-        boat.location.state
-    ) {
-
-        parts.push(
-            boat.location.state
+        // Get weather
+        const weatherResponse = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m&temperature_unit=fahrenheit&wind_speed_unit=kn`
         );
 
+        const weatherData = await weatherResponse.json();
+
+        const current = weatherData.current;
+
+
+        // Update location
+        document.getElementById("weather-location").textContent =
+            `📍 ${city}, ${country}`;
+
+
+        // Update temperature
+        document.getElementById("temperature").textContent =
+            `${Math.round(current.temperature_2m)}°F`;
+
+
+        // Update wind speed
+        document.getElementById("wind-speed").textContent =
+            `${Math.round(current.wind_speed_10m)} knots`;
+
+
+        // Update wind direction
+        document.getElementById("wind-direction").textContent =
+            `${getWindDirection(current.wind_direction_10m)} (${Math.round(current.wind_direction_10m)}°)`;
+
+
+        // Update wind gusts
+        document.getElementById("wind-gusts").textContent =
+            `${Math.round(current.wind_gusts_10m)} knots`;
+
+
+        // Update conditions
+        document.getElementById("conditions").textContent =
+            getWeatherDescription(current.weather_code);
+
+
+        status.textContent = "Current conditions loaded.";
+
+    } catch (error) {
+
+        console.error("Weather error:", error);
+
+        status.textContent =
+            "Unable to find weather for that location.";
+
     }
-
-
-    if (
-        boat.location.country
-    ) {
-
-        parts.push(
-            boat.location.country
-        );
-
-    }
-
-
-    return (
-        parts.length
-            ? parts.join(", ")
-            : "Location unavailable"
-    );
-
 }
 
 
-/* =====================================================
-   GET IMAGE
-===================================================== */
+// ------------------------------
+// BOAT FLEET
+// ------------------------------
 
-function getBoatImage(boat) {
-
-    if (
-        Array.isArray(
-            boat.photos
-        ) &&
-        boat.photos.length > 0
-    ) {
-
-        return boat.photos[0];
-
-    }
+const boatContainer = document.getElementById("boat-container");
+const sortSelect = document.getElementById("sort");
 
 
-    return (
-        "https://images.unsplash.com/" +
-        "photo-1540946485063-a40da27545f8" +
-        "?auto=format&fit=crop&w=1000&q=80"
-    );
-
-}
-
-
-/* =====================================================
-   DISPLAY BOATS
-===================================================== */
-
-function displayBoats(
-    boatList
-) {
+// Display boats
+function displayBoats(boats) {
 
     boatContainer.innerHTML = "";
 
 
-    if (
-        !boatList ||
-        boatList.length === 0
-    ) {
+    if (!boats || boats.length === 0) {
 
         boatContainer.innerHTML = `
-
-            <div style="
+            <p style="
                 grid-column: 1 / -1;
-                background: white;
-                padding: 40px;
-                border-radius: 15px;
                 text-align: center;
+                padding: 40px;
+                font-size: 18px;
             ">
-
-                <h3>
-                    No boat listings found.
-                </h3>
-
-            </div>
-
+                No boat listings found.
+            </p>
         `;
 
         return;
-
     }
 
 
-    boatList.forEach(
-        function(boat) {
+    boats.forEach((boat) => {
 
-            const card =
-                document.createElement(
-                    "div"
-                );
-
-
-            card.className =
-                "boat-card";
+        // Get the first available photo
+        const image =
+            boat.photos && boat.photos.length > 0
+                ? boat.photos[0]
+                : "https://images.unsplash.com/photo-1540946485063-a40da27545f8?auto=format&fit=crop&w=900&q=80";
 
 
-            const title =
-                getBoatTitle(
-                    boat
-                );
+        // Price
+        let price = "Price on Application";
 
-
-            const type =
-                getBoatType(
-                    boat
-                );
-
-
-            const length =
-                getBoatLength(
-                    boat
-                );
-
-
-            const price =
-                getBoatPrice(
-                    boat
-                );
-
-
-            const location =
-                getBoatLocation(
-                    boat
-                );
-
-
-            const image =
-                getBoatImage(
-                    boat
-                );
-
-
-            const listingURL =
-                boat.url ||
-                "#";
-
-
-            card.innerHTML = `
-
-                <img
-                    src="${image}"
-                    alt="${title}"
-                    class="boat-image"
-                    loading="lazy"
-                    onerror="
-                        this.src='https://images.unsplash.com/photo-1540946485063-a40da27545f8?auto=format&fit=crop&w=1000&q=80'
-                    "
-                >
-
-
-                <div class="boat-info">
-
-                    <h3>
-                        ${title}
-                    </h3>
-
-
-                    <p>
-                        <strong>
-                            Type:
-                        </strong>
-                        ${type}
-                    </p>
-
-
-                    <p>
-                        <strong>
-                            Length:
-                        </strong>
-                        ${length}
-                    </p>
-
-
-                    <p>
-                        <strong>
-                            Location:
-                        </strong>
-                        ${location}
-                    </p>
-
-
-                    <p class="price">
-                        ${price}
-                    </p>
-
-
-                    ${
-                        listingURL !== "#"
-                        ?
-                        `
-                            <a
-                                href="${listingURL}"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="boat-link"
-                            >
-                                View Real Listing
-                            </a>
-                        `
-                        :
-                        ""
-                    }
-
-                </div>
-
-            `;
-
-
-            boatContainer.appendChild(
-                card
-            );
-
+        if (
+            boat.price !== null &&
+            boat.price !== undefined &&
+            boat.price !== ""
+        ) {
+            price = `${boat.currency || "$"} ${Number(boat.price).toLocaleString()}`;
         }
-    );
+
+
+        // Length
+        let length = "Length unavailable";
+
+        if (boat.length_m) {
+            length = `${boat.length_m} m`;
+        }
+
+
+        // Boat name
+        const boatName =
+            boat.title ||
+            `${boat.make || ""} ${boat.model || ""}`.trim() ||
+            "Bluewater Sailboat";
+
+
+        // Create card
+        const card = document.createElement("div");
+
+        card.className = "boat-card";
+
+
+        card.innerHTML = `
+            <img
+                class="boat-image"
+                src="${image}"
+                alt="${boatName}"
+                onerror="this.src='https://images.unsplash.com/photo-1540946485063-a40da27545f8?auto=format&fit=crop&w=900&q=80'"
+            >
+
+            <div class="boat-info">
+
+                <h3>${boatName}</h3>
+
+                <p>
+                    <strong>Make:</strong>
+                    ${boat.make || "N/A"}
+                </p>
+
+                <p>
+                    <strong>Model:</strong>
+                    ${boat.model || "N/A"}
+                </p>
+
+                <p>
+                    <strong>Year:</strong>
+                    ${boat.year || "N/A"}
+                </p>
+
+                <p>
+                    <strong>Length:</strong>
+                    ${length}
+                </p>
+
+                <p>
+                    <strong>Location:</strong>
+                    ${boat.location || "Location unavailable"}
+                </p>
+
+                <p class="price">
+                    ${price}
+                </p>
+
+                ${
+                    boat.url
+                        ? `
+                        <a
+                            href="${boat.url}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style="
+                                display: inline-block;
+                                margin-top: 10px;
+                                color: #0b6e99;
+                                font-weight: bold;
+                                text-decoration: none;
+                            "
+                        >
+                            View Listing →
+                        </a>
+                        `
+                        : ""
+                }
+
+            </div>
+        `;
+
+
+        boatContainer.appendChild(card);
+
+    });
 
 }
 
 
-/* =====================================================
-   LOAD REAL BOATS
-===================================================== */
+// ------------------------------
+// LOAD BOATS
+// ------------------------------
 
-async function loadBoats(
-    sort = "default"
-) {
+async function loadBoats(sortValue = "default") {
 
     boatContainer.innerHTML = `
-
-        <div style="
+        <p style="
             grid-column: 1 / -1;
             text-align: center;
             padding: 40px;
         ">
-
-            <h3>
-                Loading real boat listings...
-            </h3>
-
-            <p>
-                Connecting to BoatListing.com.au
-            </p>
-
-        </div>
-
+            Loading real boat listings...
+        </p>
     `;
 
 
     try {
 
-        let apiURL =
-            "/api/boats";
+        let apiUrl =
+            `${BOAT_API}?category=Sail&limit=12`;
 
 
-        /*
-            Tell our Vercel function
-            what sorting the user selected.
-        */
+        // Tell the real API how to sort the boats
+        if (sortValue === "price-low") {
+            apiUrl += "&sort=price_asc";
+        }
 
-        if (
-            sort !== "default"
-        ) {
+        else if (sortValue === "price-high") {
+            apiUrl += "&sort=price_desc";
+        }
 
-            apiURL +=
-                "?sort=" +
-                encodeURIComponent(
-                    sort
-                );
+        else if (sortValue === "length-short") {
+            apiUrl += "&sort=length_asc";
+        }
 
+        else if (sortValue === "length-long") {
+            apiUrl += "&sort=length_desc";
         }
 
 
-        console.log(
-            "Requesting:",
-            apiURL
-        );
+        console.log("Loading boats from:", apiUrl);
 
 
-        /*
-            CONTACT OUR VERCEL FUNCTION
-        */
-
-        const response =
-            await fetch(
-                apiURL
-            );
+        const response = await fetch(apiUrl);
 
 
-        if (
-            !response.ok
-        ) {
-
+        if (!response.ok) {
             throw new Error(
-                "Our API returned HTTP " +
-                response.status
+                `Boat API returned ${response.status}`
             );
+        }
+
+
+        const data = await response.json();
+
+
+        console.log("Boat API data:", data);
+
+
+        // API returns the boats inside data.boats
+        let boats = data.boats || [];
+
+
+        // Name sorting isn't provided by the API,
+        // so we sort those alphabetically here.
+        if (sortValue === "name") {
+
+            boats.sort((a, b) => {
+
+                const nameA =
+                    a.title ||
+                    `${a.make || ""} ${a.model || ""}`;
+
+                const nameB =
+                    b.title ||
+                    `${b.make || ""} ${b.model || ""}`;
+
+                return nameA.localeCompare(nameB);
+
+            });
 
         }
 
 
-        const data =
-            await response.json();
+        displayBoats(boats);
 
 
-        console.log(
-            "REAL BOAT DATA:",
-            data
-        );
+    } catch (error) {
 
-
-        /*
-            BoatListing returns:
-
-            {
-                boats: [...]
-            }
-        */
-
-        if (
-            Array.isArray(
-                data.boats
-            )
-        ) {
-
-            boats =
-                data.boats;
-
-        }
-
-
-        else if (
-            Array.isArray(
-                data
-            )
-        ) {
-
-            boats =
-                data;
-
-        }
-
-
-        else {
-
-            boats = [];
-
-        }
-
-
-        /*
-            Name sorting happens on the
-            real API results.
-        */
-
-        if (
-            sort === "name"
-        ) {
-
-            boats.sort(
-                function(a, b) {
-
-                    return getBoatTitle(a)
-                        .localeCompare(
-                            getBoatTitle(b)
-                        );
-
-                }
-            );
-
-        }
-
-
-        displayBoats(
-            boats
-        );
-
-
-        console.log(
-            "Loaded real boats:",
-            boats.length
-        );
-
-    }
-
-
-    catch (error) {
-
-        console.error(
-            "Boat API Error:",
-            error
-        );
+        console.error("Boat API error:", error);
 
 
         boatContainer.innerHTML = `
-
             <div style="
                 grid-column: 1 / -1;
-                background: white;
-                padding: 40px;
-                border-radius: 15px;
                 text-align: center;
+                padding: 40px;
             ">
 
-                <h3>
-                    Boat listings are currently unavailable.
-                </h3>
+                <h3>Boat listings are currently unavailable.</h3>
 
-                <p>
-                    Please refresh the page and try again.
+                <p style="margin-top: 10px;">
+                    Please try again in a moment.
                 </p>
 
             </div>
-
         `;
 
     }
@@ -594,393 +392,51 @@ async function loadBoats(
 }
 
 
-/* =====================================================
-   SORTING
-===================================================== */
+// ------------------------------
+// BUTTON EVENTS
+// ------------------------------
 
-sortSelect.addEventListener(
-    "change",
-    function() {
+locationButton.addEventListener("click", () => {
 
-        loadBoats(
-            sortSelect.value
-        );
+    const location = locationInput.value.trim();
 
-    }
-);
-
-
-/* =====================================================
-   START BOAT API
-===================================================== */
-
-loadBoats();
-
-
-/* =====================================================
-   WEATHER API
-===================================================== */
-
-const locationInput =
-    document.getElementById(
-        "location-input"
-    );
-
-
-const locationButton =
-    document.getElementById(
-        "location-button"
-    );
-
-
-const weatherStatus =
-    document.getElementById(
-        "weather-status"
-    );
-
-
-const weatherLocation =
-    document.getElementById(
-        "weather-location"
-    );
-
-
-/* =====================================================
-   WIND DIRECTION
-===================================================== */
-
-function getWindDirection(
-    degrees
-) {
-
-    const directions = [
-        "N",
-        "NE",
-        "E",
-        "SE",
-        "S",
-        "SW",
-        "W",
-        "NW"
-    ];
-
-
-    const index =
-        Math.round(
-            degrees / 45
-        ) % 8;
-
-
-    return directions[index];
-
-}
-
-
-/* =====================================================
-   WEATHER DESCRIPTION
-===================================================== */
-
-function getWeatherDescription(
-    code
-) {
-
-    const descriptions = {
-
-        0: "Clear Sky",
-        1: "Mainly Clear",
-        2: "Partly Cloudy",
-        3: "Overcast",
-        45: "Fog",
-        48: "Fog",
-        51: "Light Drizzle",
-        53: "Drizzle",
-        55: "Heavy Drizzle",
-        61: "Light Rain",
-        63: "Rain",
-        65: "Heavy Rain",
-        71: "Light Snow",
-        73: "Snow",
-        75: "Heavy Snow",
-        80: "Rain Showers",
-        81: "Rain Showers",
-        82: "Heavy Rain Showers",
-        95: "Thunderstorm",
-        96: "Thunderstorm",
-        99: "Thunderstorm"
-
-    };
-
-
-    return (
-        descriptions[code] ||
-        "Unknown"
-    );
-
-}
-
-
-/* =====================================================
-   WEATHER FUNCTION
-===================================================== */
-
-async function getWeatherForLocation(
-    location
-) {
-
-    weatherStatus.textContent =
-        "Finding location...";
-
-
-    try {
-
-        const geocodingURL =
-            "https://geocoding-api.open-meteo.com/v1/search" +
-            "?name=" +
-            encodeURIComponent(
-                location
-            ) +
-            "&count=1" +
-            "&language=en" +
-            "&format=json";
-
-
-        const geocodingResponse =
-            await fetch(
-                geocodingURL
-            );
-
-
-        if (
-            !geocodingResponse.ok
-        ) {
-
-            throw new Error(
-                "Location search failed."
-            );
-
-        }
-
-
-        const geocodingData =
-            await geocodingResponse.json();
-
-
-        if (
-            !geocodingData.results ||
-            geocodingData.results.length === 0
-        ) {
-
-            throw new Error(
-                "Location not found."
-            );
-
-        }
-
-
-        const place =
-            geocodingData.results[0];
-
-
-        const latitude =
-            place.latitude;
-
-
-        const longitude =
-            place.longitude;
-
-
-        weatherStatus.textContent =
-            "Loading sailing conditions...";
-
-
-        const weatherURL =
-            "https://api.open-meteo.com/v1/forecast" +
-            "?latitude=" +
-            latitude +
-            "&longitude=" +
-            longitude +
-            "&current=" +
-            "temperature_2m," +
-            "weather_code," +
-            "wind_speed_10m," +
-            "wind_direction_10m," +
-            "wind_gusts_10m" +
-            "&temperature_unit=fahrenheit" +
-            "&wind_speed_unit=kn" +
-            "&timezone=auto";
-
-
-        const weatherResponse =
-            await fetch(
-                weatherURL
-            );
-
-
-        if (
-            !weatherResponse.ok
-        ) {
-
-            throw new Error(
-                "Weather request failed."
-            );
-
-        }
-
-
-        const weatherData =
-            await weatherResponse.json();
-
-
-        const current =
-            weatherData.current;
-
-
-        document.getElementById(
-            "temperature"
-        ).textContent =
-            Math.round(
-                current.temperature_2m
-            ) +
-            "°F";
-
-
-        document.getElementById(
-            "wind-speed"
-        ).textContent =
-            Math.round(
-                current.wind_speed_10m
-            ) +
-            " knots";
-
-
-        document.getElementById(
-            "wind-direction"
-        ).textContent =
-            getWindDirection(
-                current.wind_direction_10m
-            );
-
-
-        document.getElementById(
-            "wind-gusts"
-        ).textContent =
-            Math.round(
-                current.wind_gusts_10m
-            ) +
-            " knots";
-
-
-        document.getElementById(
-            "conditions"
-        ).textContent =
-            getWeatherDescription(
-                current.weather_code
-            );
-
-
-        weatherLocation.textContent =
-            "📍 " +
-            place.name +
-            ", " +
-            place.country;
-
-
-        weatherStatus.textContent =
-            "Live sailing data retrieved from Open-Meteo.";
-
+    if (location) {
+        getWeather(location);
     }
 
-
-    catch (error) {
-
-        console.error(
-            "Weather API Error:",
-            error
-        );
+});
 
 
-        weatherStatus.textContent =
-            "We couldn't find that location. Please try another city or country.";
+// Allow pressing Enter in the location box
+locationInput.addEventListener("keydown", (event) => {
 
-    }
+    if (event.key === "Enter") {
 
-}
+        const location = locationInput.value.trim();
 
-
-/* =====================================================
-   WEATHER BUTTON
-===================================================== */
-
-locationButton.addEventListener(
-    "click",
-    function() {
-
-        const location =
-            locationInput.value.trim();
-
-
-        if (
-            location === ""
-        ) {
-
-            weatherStatus.textContent =
-                "Please enter a location.";
-
-            return;
-
-        }
-
-
-        getWeatherForLocation(
-            location
-        );
-
-    }
-);
-
-
-/* =====================================================
-   ENTER KEY
-===================================================== */
-
-locationInput.addEventListener(
-    "keydown",
-    function(event) {
-
-        if (
-            event.key === "Enter"
-        ) {
-
-            const location =
-                locationInput.value.trim();
-
-
-            if (
-                location === ""
-            ) {
-
-                weatherStatus.textContent =
-                    "Please enter a location.";
-
-                return;
-
-            }
-
-
-            getWeatherForLocation(
-                location
-            );
-
+        if (location) {
+            getWeather(location);
         }
 
     }
-);
+
+});
 
 
-/* =====================================================
-   INITIAL WEATHER
-===================================================== */
+// Sorting
+sortSelect.addEventListener("change", () => {
 
-getWeatherForLocation(
-    "Miami"
-);
+    loadBoats(sortSelect.value);
+
+});
+
+
+// ------------------------------
+// INITIAL PAGE LOAD
+// ------------------------------
+
+// Load Miami weather
+getWeather("Miami");
+
+// Load real sailboat listings
+loadBoats("default");
