@@ -1,3 +1,7 @@
+// ==========================================
+// BOAT DATA
+// ==========================================
+
 const boats = [
     {
         name: "Ocean Breeze 42",
@@ -6,7 +10,6 @@ const boats = [
         type: "Catamaran",
         image: "https://yatcowpmedialibrary.nyc3.cdn.digitaloceanspaces.com/wp-content/uploads/2023/06/catamaran-guide-72-dixon-catamaran-2017.jpg"
     },
-
     {
         name: "Blue Horizon 50",
         price: 725000,
@@ -14,7 +17,6 @@ const boats = [
         type: "Catamaran",
         image: "https://www.davidwaltersyachts.com/hs-fs/hubfs/Hammer.jpg?height=2248&name=Hammer.jpg&width=3000"
     },
-
     {
         name: "Sea Voyager 38",
         price: 325000,
@@ -22,7 +24,6 @@ const boats = [
         type: "Sailboat",
         image: "https://keyassets.timeincuk.net/inspirewp/live/wp-content/uploads/sites/21/2021/10/YAW265.best_multihull.seawind_1600_3-630x394.jpg"
     },
-
     {
         name: "Atlantic Explorer 55",
         price: 950000,
@@ -30,7 +31,6 @@ const boats = [
         type: "Sailboat",
         image: "https://www.dreamyachtsales.com/app/uploads/2024/08/MAIN-dream-performance-program.jpg"
     },
-
     {
         name: "Coral Dream 46",
         price: 575000,
@@ -38,23 +38,22 @@ const boats = [
         type: "Catamaran",
         image: "https://www.catlante-catamarans.com/sites/default/files/bloc/home/catlante%20neo-Sailing%20%281%29.jpg"
     },
-
     {
         name: "Pacific Star 60",
         price: 1200000,
         length: 60,
         type: "Sailboat",
-       image: "https://upload.wikimedia.org/wikipedia/commons/9/91/Sunset_with_sail_boat_on_water_%28Unsplash%29.jpg"
+        image: "https://upload.wikimedia.org/wikipedia/commons/9/91/Sunset_with_sail_boat_on_water_%28Unsplash%29.jpg"
     }
 ];
 
 
-// Find the HTML elements we need
+// ==========================================
+// DISPLAY BOATS
+// ==========================================
+
 const boatContainer = document.getElementById("boat-container");
-const sortSelect = document.getElementById("sort");
 
-
-// Display the boats
 function displayBoats(boatList) {
 
     boatContainer.innerHTML = "";
@@ -73,17 +72,19 @@ function displayBoats(boatList) {
             >
 
             <div class="boat-info">
-
                 <h3>${boat.name}</h3>
 
-                <p><strong>Type:</strong> ${boat.type}</p>
+                <p>
+                    <strong>Type:</strong> ${boat.type}
+                </p>
 
-                <p><strong>Length:</strong> ${boat.length} ft</p>
+                <p>
+                    <strong>Length:</strong> ${boat.length} ft
+                </p>
 
                 <p class="price">
                     $${boat.price.toLocaleString()}
                 </p>
-
             </div>
         `;
 
@@ -92,7 +93,12 @@ function displayBoats(boatList) {
 }
 
 
-// Sort the boats when the dropdown changes
+// ==========================================
+// SORTING
+// ==========================================
+
+const sortSelect = document.getElementById("sort");
+
 sortSelect.addEventListener("change", function() {
 
     const sortValue = sortSelect.value;
@@ -128,13 +134,135 @@ sortSelect.addEventListener("change", function() {
         sortedBoats.sort(function(a, b) {
             return a.name.localeCompare(b.name);
         });
-
     }
 
     displayBoats(sortedBoats);
-
 });
 
 
-// Show the boats when the page first loads
+// ==========================================
+// SHOW BOATS IMMEDIATELY
+// ==========================================
+
 displayBoats(boats);
+
+
+// ==========================================
+// WEATHER API
+// ==========================================
+
+const weatherAPI =
+    "https://api.open-meteo.com/v1/forecast" +
+    "?latitude=25.7617" +
+    "&longitude=-80.1918" +
+    "&current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m" +
+    "&temperature_unit=fahrenheit" +
+    "&wind_speed_unit=kn" +
+    "&timezone=auto";
+
+
+function getWindDirection(degrees) {
+
+    const directions = [
+        "N",
+        "NE",
+        "E",
+        "SE",
+        "S",
+        "SW",
+        "W",
+        "NW"
+    ];
+
+    const index = Math.round(degrees / 45) % 8;
+
+    return directions[index];
+}
+
+
+function getWeatherDescription(code) {
+
+    const descriptions = {
+        0: "Clear Sky",
+        1: "Mainly Clear",
+        2: "Partly Cloudy",
+        3: "Overcast",
+        45: "Fog",
+        48: "Fog",
+        51: "Light Drizzle",
+        53: "Drizzle",
+        55: "Heavy Drizzle",
+        61: "Light Rain",
+        63: "Rain",
+        65: "Heavy Rain",
+        71: "Light Snow",
+        73: "Snow",
+        75: "Heavy Snow",
+        80: "Rain Showers",
+        81: "Rain Showers",
+        82: "Heavy Rain Showers",
+        95: "Thunderstorm",
+        96: "Thunderstorm",
+        99: "Thunderstorm"
+    };
+
+    return descriptions[code] || "Unknown";
+}
+
+
+// ==========================================
+// GET WEATHER
+// ==========================================
+
+async function getWeather() {
+
+    try {
+
+        const response = await fetch(weatherAPI);
+
+        if (!response.ok) {
+            throw new Error("Weather request failed");
+        }
+
+        const data = await response.json();
+
+        const current = data.current;
+
+
+        document.getElementById("temperature").textContent =
+            Math.round(current.temperature_2m) + "°F";
+
+
+        document.getElementById("wind-speed").textContent =
+            Math.round(current.wind_speed_10m) + " knots";
+
+
+        document.getElementById("wind-direction").textContent =
+            getWindDirection(current.wind_direction_10m);
+
+
+        document.getElementById("wind-gusts").textContent =
+            Math.round(current.wind_gusts_10m) + " knots";
+
+
+        document.getElementById("conditions").textContent =
+            getWeatherDescription(current.weather_code);
+
+
+        document.getElementById("weather-status").textContent =
+            "Live data retrieved from Open-Meteo";
+
+
+    } catch (error) {
+
+        console.error("Weather API Error:", error);
+
+        document.getElementById("weather-status").textContent =
+            "Weather information temporarily unavailable.";
+    }
+}
+
+
+// Start weather separately
+
+getWeather();
