@@ -1,6 +1,6 @@
 /* =====================================================
    BLUEWATER YACHTS
-   REAL SAILBOAT API
+   REAL BOATLISTING API
 ===================================================== */
 
 
@@ -9,14 +9,18 @@
 ===================================================== */
 
 const boatContainer =
-    document.getElementById("boat-container");
+    document.getElementById(
+        "boat-container"
+    );
 
 const sortSelect =
-    document.getElementById("sort");
+    document.getElementById(
+        "sort"
+    );
 
 
 /* =====================================================
-   STORE BOATS
+   BOAT DATA
 ===================================================== */
 
 let boats = [];
@@ -30,9 +34,8 @@ function getBoatTitle(boat) {
 
     return (
         boat.title ||
-        boat.name ||
-        boat.model ||
-        "Sailboat"
+        `${boat.year || ""} ${boat.make || ""} ${boat.model || ""}`.trim() ||
+        "Boat Listing"
     );
 
 }
@@ -46,24 +49,8 @@ function getBoatType(boat) {
 
     return (
         boat.boatType ||
-        boat.boat_type ||
-        boat.type ||
         boat.category ||
-        "Sailboat"
-    );
-
-}
-
-
-/* =====================================================
-   GET BOAT YEAR
-===================================================== */
-
-function getBoatYear(boat) {
-
-    return (
-        boat.year ||
-        "N/A"
+        "Boat"
     );
 
 }
@@ -75,33 +62,24 @@ function getBoatYear(boat) {
 
 function getBoatLength(boat) {
 
-    const length =
-        boat.length_m ??
-        boat.length;
-
     if (
-        length === null ||
-        length === undefined ||
-        length === ""
+        boat.length_m === null ||
+        boat.length_m === undefined
     ) {
+
         return "N/A";
+
     }
 
-    const number =
-        Number(length);
 
-    if (isNaN(number)) {
-        return "N/A";
-    }
+    const feet =
+        Number(
+            boat.length_m
+        ) * 3.28084;
 
-    /*
-       BoatListing gives length in metres.
-
-       Convert metres to feet.
-    */
 
     return (
-        (number * 3.28084).toFixed(1) +
+        feet.toFixed(1) +
         " ft"
     );
 
@@ -117,33 +95,30 @@ function getBoatPrice(boat) {
     if (
         boat.priceOnApplication === true
     ) {
+
         return "Price on Application";
+
     }
+
 
     if (
         boat.price === null ||
-        boat.price === undefined ||
-        boat.price === ""
+        boat.price === undefined
     ) {
+
         return "Price on Application";
+
     }
 
-    const price =
-        Number(boat.price);
-
-    if (isNaN(price)) {
-        return "Price on Application";
-    }
-
-    const currency =
-        boat.currency ||
-        "AUD";
 
     return (
-        currency +
-        " $" +
-        price.toLocaleString()
-    );
+        boat.currency ||
+        "AUD"
+    ) +
+    " $" +
+    Number(
+        boat.price
+    ).toLocaleString();
 
 }
 
@@ -155,49 +130,64 @@ function getBoatPrice(boat) {
 function getBoatLocation(boat) {
 
     if (
-        typeof boat.location === "string"
+        !boat.location
     ) {
-        return boat.location;
+
+        return "Location unavailable";
+
     }
 
 
     if (
-        boat.location &&
-        typeof boat.location === "object"
+        typeof boat.location === "string"
     ) {
 
-        const locationParts = [];
-
-        if (boat.location.city) {
-            locationParts.push(
-                boat.location.city
-            );
-        }
-
-        if (boat.location.state) {
-            locationParts.push(
-                boat.location.state
-            );
-        }
-
-        if (boat.location.country) {
-            locationParts.push(
-                boat.location.country
-            );
-        }
-
-        if (
-            locationParts.length > 0
-        ) {
-            return locationParts.join(
-                ", "
-            );
-        }
+        return boat.location;
 
     }
 
 
-    return "Location unavailable";
+    const parts = [];
+
+
+    if (
+        boat.location.city
+    ) {
+
+        parts.push(
+            boat.location.city
+        );
+
+    }
+
+
+    if (
+        boat.location.state
+    ) {
+
+        parts.push(
+            boat.location.state
+        );
+
+    }
+
+
+    if (
+        boat.location.country
+    ) {
+
+        parts.push(
+            boat.location.country
+        );
+
+    }
+
+
+    return (
+        parts.length
+            ? parts.join(", ")
+            : "Location unavailable"
+    );
 
 }
 
@@ -208,60 +198,17 @@ function getBoatLocation(boat) {
 
 function getBoatImage(boat) {
 
-    /*
-       BoatListing photos are normally
-       provided as an array.
-    */
-
     if (
-        Array.isArray(boat.photos) &&
+        Array.isArray(
+            boat.photos
+        ) &&
         boat.photos.length > 0
     ) {
 
-        const photo =
-            boat.photos[0];
-
-
-        if (
-            typeof photo === "string"
-        ) {
-            return photo;
-        }
-
-
-        if (
-            photo &&
-            photo.url
-        ) {
-            return photo.url;
-        }
+        return boat.photos[0];
 
     }
 
-
-    /*
-       Other possible image fields.
-    */
-
-    if (
-        boat.image &&
-        typeof boat.image === "string"
-    ) {
-        return boat.image;
-    }
-
-
-    if (
-        boat.image_url &&
-        typeof boat.image_url === "string"
-    ) {
-        return boat.image_url;
-    }
-
-
-    /*
-       Backup image.
-    */
 
     return (
         "https://images.unsplash.com/" +
@@ -276,7 +223,9 @@ function getBoatImage(boat) {
    DISPLAY BOATS
 ===================================================== */
 
-function displayBoats(boatList) {
+function displayBoats(
+    boatList
+) {
 
     boatContainer.innerHTML = "";
 
@@ -290,26 +239,22 @@ function displayBoats(boatList) {
 
             <div style="
                 grid-column: 1 / -1;
-                text-align: center;
-                padding: 40px;
                 background: white;
+                padding: 40px;
                 border-radius: 15px;
+                text-align: center;
             ">
 
                 <h3>
-                    No sailboats found
+                    No boat listings found.
                 </h3>
-
-                <p>
-                    The BoatListing API did not
-                    return any current sailboat listings.
-                </p>
 
             </div>
 
         `;
 
         return;
+
     }
 
 
@@ -322,41 +267,49 @@ function displayBoats(boatList) {
                 );
 
 
-            card.classList.add(
-                "boat-card"
-            );
+            card.className =
+                "boat-card";
 
 
             const title =
-                getBoatTitle(boat);
+                getBoatTitle(
+                    boat
+                );
 
 
             const type =
-                getBoatType(boat);
-
-
-            const year =
-                getBoatYear(boat);
+                getBoatType(
+                    boat
+                );
 
 
             const length =
-                getBoatLength(boat);
+                getBoatLength(
+                    boat
+                );
 
 
             const price =
-                getBoatPrice(boat);
+                getBoatPrice(
+                    boat
+                );
 
 
             const location =
-                getBoatLocation(boat);
+                getBoatLocation(
+                    boat
+                );
 
 
             const image =
-                getBoatImage(boat);
+                getBoatImage(
+                    boat
+                );
 
 
             const listingURL =
-                boat.url || "#";
+                boat.url ||
+                "#";
 
 
             card.innerHTML = `
@@ -366,13 +319,18 @@ function displayBoats(boatList) {
                     alt="${title}"
                     class="boat-image"
                     loading="lazy"
+                    onerror="
+                        this.src='https://images.unsplash.com/photo-1540946485063-a40da27545f8?auto=format&fit=crop&w=1000&q=80'
+                    "
                 >
+
 
                 <div class="boat-info">
 
                     <h3>
                         ${title}
                     </h3>
+
 
                     <p>
                         <strong>
@@ -381,12 +339,6 @@ function displayBoats(boatList) {
                         ${type}
                     </p>
 
-                    <p>
-                        <strong>
-                            Year:
-                        </strong>
-                        ${year}
-                    </p>
 
                     <p>
                         <strong>
@@ -395,6 +347,7 @@ function displayBoats(boatList) {
                         ${length}
                     </p>
 
+
                     <p>
                         <strong>
                             Location:
@@ -402,32 +355,27 @@ function displayBoats(boatList) {
                         ${location}
                     </p>
 
+
                     <p class="price">
                         ${price}
                     </p>
 
+
                     ${
                         listingURL !== "#"
-                        ? `
+                        ?
+                        `
                             <a
                                 href="${listingURL}"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                style="
-                                    display: inline-block;
-                                    margin-top: 10px;
-                                    padding: 10px 15px;
-                                    background: #0b6e99;
-                                    color: white;
-                                    text-decoration: none;
-                                    border-radius: 6px;
-                                    font-weight: bold;
-                                "
+                                class="boat-link"
                             >
                                 View Real Listing
                             </a>
                         `
-                        : ""
+                        :
+                        ""
                     }
 
                 </div>
@@ -446,7 +394,7 @@ function displayBoats(boatList) {
 
 
 /* =====================================================
-   LOAD BOATS FROM OUR VERCEL API
+   LOAD REAL BOATS
 ===================================================== */
 
 async function loadBoats(
@@ -462,7 +410,7 @@ async function loadBoats(
         ">
 
             <h3>
-                Loading real sailboats...
+                Loading real boat listings...
             </h3>
 
             <p>
@@ -476,33 +424,20 @@ async function loadBoats(
 
     try {
 
-        /*
-           IMPORTANT:
-
-           We are NOT calling BoatListing directly
-           from the browser anymore.
-
-           We call our own Vercel API route:
-
-           /api/boats
-
-           Vercel then contacts BoatListing.
-        */
-
-        let url =
+        let apiURL =
             "/api/boats";
 
 
         /*
-           Tell our Vercel function
-           which sort option was selected.
+            Tell our Vercel function
+            what sorting the user selected.
         */
 
         if (
             sort !== "default"
         ) {
 
-            url +=
+            apiURL +=
                 "?sort=" +
                 encodeURIComponent(
                     sort
@@ -512,19 +447,27 @@ async function loadBoats(
 
 
         console.log(
-            "Website requesting:",
-            url
+            "Requesting:",
+            apiURL
         );
 
 
+        /*
+            CONTACT OUR VERCEL FUNCTION
+        */
+
         const response =
-            await fetch(url);
+            await fetch(
+                apiURL
+            );
 
 
-        if (!response.ok) {
+        if (
+            !response.ok
+        ) {
 
             throw new Error(
-                "Our Vercel API returned " +
+                "Our API returned HTTP " +
                 response.status
             );
 
@@ -536,18 +479,23 @@ async function loadBoats(
 
 
         console.log(
-            "Real BoatListing data:",
+            "REAL BOAT DATA:",
             data
         );
 
 
         /*
-           BoatListing's documented response
-           contains a "boats" array.
+            BoatListing returns:
+
+            {
+                boats: [...]
+            }
         */
 
         if (
-            Array.isArray(data.boats)
+            Array.isArray(
+                data.boats
+            )
         ) {
 
             boats =
@@ -555,14 +503,18 @@ async function loadBoats(
 
         }
 
+
         else if (
-            Array.isArray(data)
+            Array.isArray(
+                data
+            )
         ) {
 
             boats =
                 data;
 
         }
+
 
         else {
 
@@ -572,8 +524,8 @@ async function loadBoats(
 
 
         /*
-           Name sorting is performed
-           on the real API results.
+            Name sorting happens on the
+            real API results.
         */
 
         if (
@@ -600,7 +552,8 @@ async function loadBoats(
 
 
         console.log(
-            `Loaded ${boats.length} real sailboats.`
+            "Loaded real boats:",
+            boats.length
         );
 
     }
@@ -609,7 +562,7 @@ async function loadBoats(
     catch (error) {
 
         console.error(
-            "Sailboat API Error:",
+            "Boat API Error:",
             error
         );
 
@@ -618,20 +571,18 @@ async function loadBoats(
 
             <div style="
                 grid-column: 1 / -1;
-                text-align: center;
-                padding: 50px;
                 background: white;
+                padding: 40px;
                 border-radius: 15px;
+                text-align: center;
             ">
 
                 <h3>
-                    Sailboat listings are
-                    currently unavailable.
+                    Boat listings are currently unavailable.
                 </h3>
 
                 <p>
-                    Please refresh the page
-                    and try again.
+                    Please refresh the page and try again.
                 </p>
 
             </div>
@@ -660,15 +611,14 @@ sortSelect.addEventListener(
 
 
 /* =====================================================
-   LOAD REAL SAILBOATS
+   START BOAT API
 ===================================================== */
 
 loadBoats();
 
 
-
 /* =====================================================
-   WEATHER
+   WEATHER API
 ===================================================== */
 
 const locationInput =
@@ -676,15 +626,18 @@ const locationInput =
         "location-input"
     );
 
+
 const locationButton =
     document.getElementById(
         "location-button"
     );
 
+
 const weatherStatus =
     document.getElementById(
         "weather-status"
     );
+
 
 const weatherLocation =
     document.getElementById(
@@ -734,45 +687,25 @@ function getWeatherDescription(
     const descriptions = {
 
         0: "Clear Sky",
-
         1: "Mainly Clear",
-
         2: "Partly Cloudy",
-
         3: "Overcast",
-
         45: "Fog",
-
         48: "Fog",
-
         51: "Light Drizzle",
-
         53: "Drizzle",
-
         55: "Heavy Drizzle",
-
         61: "Light Rain",
-
         63: "Rain",
-
         65: "Heavy Rain",
-
         71: "Light Snow",
-
         73: "Snow",
-
         75: "Heavy Snow",
-
         80: "Rain Showers",
-
         81: "Rain Showers",
-
         82: "Heavy Rain Showers",
-
         95: "Thunderstorm",
-
         96: "Thunderstorm",
-
         99: "Thunderstorm"
 
     };
@@ -787,7 +720,7 @@ function getWeatherDescription(
 
 
 /* =====================================================
-   GET WEATHER
+   WEATHER FUNCTION
 ===================================================== */
 
 async function getWeatherForLocation(
@@ -803,7 +736,9 @@ async function getWeatherForLocation(
         const geocodingURL =
             "https://geocoding-api.open-meteo.com/v1/search" +
             "?name=" +
-            encodeURIComponent(location) +
+            encodeURIComponent(
+                location
+            ) +
             "&count=1" +
             "&language=en" +
             "&format=json";
@@ -905,7 +840,8 @@ async function getWeatherForLocation(
         ).textContent =
             Math.round(
                 current.temperature_2m
-            ) + "°F";
+            ) +
+            "°F";
 
 
         document.getElementById(
@@ -913,7 +849,8 @@ async function getWeatherForLocation(
         ).textContent =
             Math.round(
                 current.wind_speed_10m
-            ) + " knots";
+            ) +
+            " knots";
 
 
         document.getElementById(
@@ -929,7 +866,8 @@ async function getWeatherForLocation(
         ).textContent =
             Math.round(
                 current.wind_gusts_10m
-            ) + " knots";
+            ) +
+            " knots";
 
 
         document.getElementById(

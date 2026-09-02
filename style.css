@@ -549,3 +549,22 @@ footer {
     }
 
 }
+/* =========================
+   REAL BOAT LISTING BUTTON
+========================= */
+
+.boat-link {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 15px;
+    background-color: #0b6e99;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.boat-link:hover {
+    background-color: #084d6b;
+}
