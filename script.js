@@ -101,9 +101,7 @@ async function getWeather(location) {
 // This is the REAL BoatListing API.
 // No fake boat data is being used.
 
-const BOAT_API =
-    "https://boatlisting.com.au/api/v1/boats";
-
+const BOAT_API = "/api/boats";
 const boatContainer =
     document.getElementById("boat-container");
 
