@@ -1,38 +1,40 @@
-export default async function handler(req, res) {
+export default async function handler(request) {
+
     try {
-        const response = await fetch(
-            "https://boatlisting.com.au/api/v1/boats?category=Sail&limit=12",
+
+        const apiURL =
+            "https://boatlisting.com.au/api/v1/boats?category=Sail&limit=12";
+
+        const response = await fetch(apiURL);
+
+        const data = await response.json();
+
+        return new Response(
+            JSON.stringify(data),
             {
+                status: 200,
                 headers: {
-                    "User-Agent": "Bluewater-Yachts-School-Project"
+                    "Content-Type": "application/json",
+                    "Cache-Control": "s-maxage=300"
                 }
             }
         );
 
-        const text = await response.text();
-
-        console.log("BoatListing status:", response.status);
-        console.log("BoatListing response:", text);
-
-        if (!response.ok) {
-            return res.status(response.status).json({
-                error: "BoatListing API error",
-                status: response.status,
-                details: text
-            });
-        }
-
-        const data = JSON.parse(text);
-
-        return res.status(200).json(data);
-
     } catch (error) {
 
-        console.error("Server error:", error);
+        console.error("Boat API Error:", error);
 
-        return res.status(500).json({
-            error: "Vercel could not connect to BoatListing",
-            details: error.message
-        });
+        return new Response(
+            JSON.stringify({
+                error: "BoatListing API connection failed",
+                message: error.message
+            }),
+            {
+                status: 500,
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }
+        );
     }
 }
