@@ -2,7 +2,6 @@
 // BLUEWATER YACHTS
 // ==========================================
 
-
 // ==========================================
 // WEATHER
 // ==========================================
@@ -10,23 +9,14 @@
 const locationInput = document.getElementById("location-input");
 const locationButton = document.getElementById("location-button");
 
-
 function getWindDirection(degrees) {
-
     const directions = [
-        "N",
-        "NE",
-        "E",
-        "SE",
-        "S",
-        "SW",
-        "W",
-        "NW"
+        "N", "NE", "E", "SE",
+        "S", "SW", "W", "NW"
     ];
 
     return directions[Math.round(degrees / 45) % 8];
 }
-
 
 function getWeatherDescription(code) {
 
@@ -43,7 +33,6 @@ function getWeatherDescription(code) {
 
     return "Unknown";
 }
-
 
 async function getWeather(location) {
 
@@ -109,8 +98,8 @@ async function getWeather(location) {
 // ==========================================
 
 // IMPORTANT:
-// Your Vercel function is api/boat.js
-// Therefore the endpoint is /api/boat
+// Your file is api/boat.js
+// Therefore the Vercel endpoint is /api/boat
 
 const BOAT_API = "/api/boat";
 
@@ -122,7 +111,7 @@ const sortSelect =
 
 
 // ==========================================
-// DISPLAY BOATS
+// DISPLAY REAL BOATS
 // ==========================================
 
 function displayBoats(boats) {
@@ -144,16 +133,19 @@ function displayBoats(boats) {
         return;
     }
 
-
     boats.forEach((boat) => {
 
-        const card = document.createElement("div");
+        const card =
+            document.createElement("div");
 
         card.className = "boat-card";
 
 
-        // Use the REAL photo from the API.
-        // Do not substitute a random boat photo.
+        const boatName =
+            boat.title ||
+            `${boat.make || ""} ${boat.model || ""}`.trim() ||
+            "Sailboat";
+
 
         let imageHTML = "";
 
@@ -167,8 +159,7 @@ function displayBoats(boats) {
                 <img
                     class="boat-image"
                     src="${boat.photos[0]}"
-                    alt="${boat.title || "Sailboat"}"
-                    onerror="this.style.display='none'"
+                    alt="${boatName}"
                 >
             `;
 
@@ -192,16 +183,6 @@ function displayBoats(boats) {
         }
 
 
-        // Boat name
-
-        const boatName =
-            boat.title ||
-            `${boat.make || ""} ${boat.model || ""}`.trim() ||
-            "Bluewater Sailboat";
-
-
-        // Price
-
         let price = "Price on Application";
 
         if (
@@ -218,18 +199,11 @@ function displayBoats(boats) {
         }
 
 
-        // Length
+        const length =
+            boat.length_m
+                ? `${boat.length_m} m`
+                : "N/A";
 
-        let length = "N/A";
-
-        if (boat.length_m) {
-
-            length = `${boat.length_m} m`;
-
-        }
-
-
-        // Card
 
         card.innerHTML = `
 
@@ -296,12 +270,11 @@ function displayBoats(boats) {
         boatContainer.appendChild(card);
 
     });
-
 }
 
 
 // ==========================================
-// LOAD REAL SAILBOATS
+// LOAD BOATS FROM REAL API
 // ==========================================
 
 async function loadBoats(sortValue = "default") {
@@ -321,70 +294,37 @@ async function loadBoats(sortValue = "default") {
 
     try {
 
-        // Build the request sent to YOUR API endpoint
-
-        const params = new URLSearchParams();
+        const params =
+            new URLSearchParams();
 
         params.set("category", "Sail");
         params.set("limit", "12");
 
 
-        // ==========================================
-        // API-CONNECTED SORTING
-        // ==========================================
+        // These values are sent to
+        // the REAL BoatListing API.
 
         if (sortValue === "price-low") {
-
-            params.set(
-                "sort",
-                "price_asc"
-            );
-
+            params.set("sort", "price_asc");
         }
-
 
         if (sortValue === "price-high") {
-
-            params.set(
-                "sort",
-                "price_desc"
-            );
-
+            params.set("sort", "price_desc");
         }
-
 
         if (sortValue === "length-short") {
-
-            params.set(
-                "sort",
-                "length_asc"
-            );
-
+            params.set("sort", "length_asc");
         }
-
 
         if (sortValue === "length-long") {
-
-            params.set(
-                "sort",
-                "length_desc"
-            );
-
+            params.set("sort", "length_desc");
         }
-
-
-        const requestURL =
-            `${BOAT_API}?${params.toString()}`;
-
-
-        console.log(
-            "Requesting real boat API:",
-            requestURL
-        );
 
 
         const response =
-            await fetch(requestURL);
+            await fetch(
+                `${BOAT_API}?${params.toString()}`
+            );
 
 
         if (!response.ok) {
@@ -401,16 +341,14 @@ async function loadBoats(sortValue = "default") {
 
 
         console.log(
-            "Real Boat API response:",
+            "REAL BOAT API:",
             data
         );
 
 
-        const boats =
-            data.boats || [];
-
-
-        displayBoats(boats);
+        displayBoats(
+            data.boats || []
+        );
 
 
     } catch (error) {
@@ -442,12 +380,11 @@ async function loadBoats(sortValue = "default") {
         `;
 
     }
-
 }
 
 
 // ==========================================
-// WEATHER BUTTON
+// LOCATION SEARCH
 // ==========================================
 
 locationButton.addEventListener(
@@ -458,18 +395,12 @@ locationButton.addEventListener(
             locationInput.value.trim();
 
         if (location) {
-
             getWeather(location);
-
         }
 
     }
 );
 
-
-// ==========================================
-// WEATHER ENTER KEY
-// ==========================================
 
 locationInput.addEventListener(
     "keydown",
@@ -481,9 +412,7 @@ locationInput.addEventListener(
                 locationInput.value.trim();
 
             if (location) {
-
                 getWeather(location);
-
             }
 
         }
