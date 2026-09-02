@@ -3,23 +3,18 @@
 // ==========================================
 
 // ==========================================
-// WEATHER
+// WEATHER API
 // ==========================================
 
 const locationInput = document.getElementById("location-input");
 const locationButton = document.getElementById("location-button");
 
 function getWindDirection(degrees) {
-    const directions = [
-        "N", "NE", "E", "SE",
-        "S", "SW", "W", "NW"
-    ];
-
+    const directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
     return directions[Math.round(degrees / 45) % 8];
 }
 
 function getWeatherDescription(code) {
-
     if (code === 0) return "Clear Sky";
     if (code === 1 || code === 2) return "Partly Cloudy";
     if (code === 3) return "Cloudy";
@@ -30,19 +25,15 @@ function getWeatherDescription(code) {
     if (code >= 80 && code <= 82) return "Rain Showers";
     if (code >= 85 && code <= 86) return "Snow Showers";
     if (code >= 95) return "Thunderstorm";
-
     return "Unknown";
 }
 
-
 async function getWeather(location) {
-
     const status = document.getElementById("weather-status");
 
     status.textContent = "Finding location...";
 
     try {
-
         const geoResponse = await fetch(
             `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`
         );
@@ -60,7 +51,6 @@ async function getWeather(location) {
         );
 
         const weatherData = await weatherResponse.json();
-
         const current = weatherData.current;
 
         document.getElementById("weather-location").textContent =
@@ -84,309 +74,200 @@ async function getWeather(location) {
         status.textContent = "Current conditions loaded.";
 
     } catch (error) {
-
-        console.error("Weather error:", error);
-
-        status.textContent =
-            "Unable to find weather for that location.";
+        console.error(error);
+        status.textContent = "Unable to find weather for that location.";
     }
 }
 
 
 // ==========================================
-// REAL BOAT API
+// YACHT DATA
 // ==========================================
 
-// IMPORTANT:
-// This is the REAL BoatListing API.
-// No fake boat data is being used.
+// These are the boats displayed on the website.
+// The sorting feature below works with this data.
 
-const BOAT_API = "/api/boats";
-const boatContainer =
-    document.getElementById("boat-container");
+const boats = [
+    {
+        name: "Ocean Breeze 42",
+        type: "Bluewater Catamaran",
+        year: 2024,
+        length: 42,
+        price: 425000,
+        location: "Miami, Florida",
+        image: "https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?auto=format&fit=crop&w=900&q=80"
+    },
 
-const sortSelect =
-    document.getElementById("sort");
+    {
+        name: "Blue Horizon 50",
+        type: "Luxury Catamaran",
+        year: 2025,
+        length: 50,
+        price: 685000,
+        location: "Fort Lauderdale, Florida",
+        image: "https://images.unsplash.com/photo-1540946485063-a40da27545f8?auto=format&fit=crop&w=900&q=80"
+    },
+
+    {
+        name: "Sea Voyager 38",
+        type: "Bluewater Sailboat",
+        year: 2023,
+        length: 38,
+        price: 295000,
+        location: "San Diego, California",
+        image: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=900&q=80"
+    },
+
+    {
+        name: "Atlantic Explorer 55",
+        type: "Bluewater Sailboat",
+        year: 2025,
+        length: 55,
+        price: 875000,
+        location: "Newport, Rhode Island",
+        image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80"
+    },
+
+    {
+        name: "Coral Dream 46",
+        type: "Performance Catamaran",
+        year: 2024,
+        length: 46,
+        price: 540000,
+        location: "Key West, Florida",
+        image: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=900&q=80"
+    },
+
+    {
+        name: "Pacific Star 60",
+        type: "Bluewater Sailboat",
+        year: 2026,
+        length: 60,
+        price: 1250000,
+        location: "Honolulu, Hawaii",
+        image: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=900&q=80"
+    }
+];
 
 
 // ==========================================
 // DISPLAY BOATS
 // ==========================================
 
-function displayBoats(boats) {
+function displayBoats(boatList) {
+
+    const boatContainer =
+        document.getElementById("boat-container");
 
     boatContainer.innerHTML = "";
 
-    if (!boats || boats.length === 0) {
+    boatList.forEach(boat => {
 
-        boatContainer.innerHTML = `
-            <p style="
-                grid-column: 1 / -1;
-                text-align: center;
-                padding: 40px;
-            ">
-                No sailboats were found.
-            </p>
-        `;
-
-        return;
-    }
-
-
-    boats.forEach((boat) => {
-
-        let image =
-            "https://images.unsplash.com/photo-1540946485063-a40da27545f8?auto=format&fit=crop&w=900&q=80";
-
-
-        if (boat.photos && boat.photos.length > 0) {
-            image = boat.photos[0];
-        }
-
-
-        let price = "Price on Application";
-
-        if (
-            boat.price !== null &&
-            boat.price !== undefined &&
-            boat.price !== ""
-        ) {
-
-            price =
-                `${boat.currency || "AU$"} ${Number(
-                    boat.price
-                ).toLocaleString()}`;
-        }
-
-
-        let length = "N/A";
-
-        if (boat.length_m) {
-            length = `${boat.length_m} m`;
-        }
-
-
-        const boatName =
-            boat.title ||
-            `${boat.make || ""} ${boat.model || ""}`.trim() ||
-            "Bluewater Sailboat";
-
-
-        const card =
-            document.createElement("div");
+        const card = document.createElement("div");
 
         card.className = "boat-card";
 
-
         card.innerHTML = `
-
             <img
                 class="boat-image"
-                src="${image}"
-                alt="${boatName}"
-                onerror="
-                    this.src='https://images.unsplash.com/photo-1540946485063-a40da27545f8?auto=format&fit=crop&w=900&q=80'
-                "
+                src="${boat.image}"
+                alt="${boat.name}"
             >
 
             <div class="boat-info">
 
-                <h3>${boatName}</h3>
+                <h3>${boat.name}</h3>
 
                 <p>
-                    <strong>Make:</strong>
-                    ${boat.make || "N/A"}
-                </p>
-
-                <p>
-                    <strong>Model:</strong>
-                    ${boat.model || "N/A"}
+                    <strong>Type:</strong>
+                    ${boat.type}
                 </p>
 
                 <p>
                     <strong>Year:</strong>
-                    ${boat.year || "N/A"}
+                    ${boat.year}
                 </p>
 
                 <p>
                     <strong>Length:</strong>
-                    ${length}
+                    ${boat.length} ft
                 </p>
 
                 <p>
                     <strong>Location:</strong>
-                    ${boat.location || "N/A"}
+                    ${boat.location}
                 </p>
 
                 <p class="price">
-                    ${price}
+                    $${boat.price.toLocaleString()}
                 </p>
-
-                ${
-                    boat.url
-                    ? `
-                        <a
-                            href="${boat.url}"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style="
-                                display:inline-block;
-                                margin-top:10px;
-                                color:#0b6e99;
-                                font-weight:bold;
-                                text-decoration:none;
-                            "
-                        >
-                            View Listing →
-                        </a>
-                    `
-                    : ""
-                }
 
             </div>
         `;
 
-
         boatContainer.appendChild(card);
-
     });
 }
 
 
 // ==========================================
-// LOAD REAL SAILBOATS
+// SORTING
 // ==========================================
 
-async function loadBoats(sortValue = "default") {
+const sortSelect =
+    document.getElementById("sort");
 
-    boatContainer.innerHTML = `
+sortSelect.addEventListener("change", function () {
 
-        <p style="
-            grid-column:1 / -1;
-            text-align:center;
-            padding:40px;
-        ">
+    const sortedBoats = [...boats];
 
-            Loading real sailboat listings...
+    switch (this.value) {
 
-        </p>
+        case "price-low":
+            sortedBoats.sort((a, b) => a.price - b.price);
+            break;
 
-    `;
+        case "price-high":
+            sortedBoats.sort((a, b) => b.price - a.price);
+            break;
 
+        case "length-short":
+            sortedBoats.sort((a, b) => a.length - b.length);
+            break;
 
-    try {
+        case "length-long":
+            sortedBoats.sort((a, b) => b.length - a.length);
+            break;
 
-        let url =
-            `${BOAT_API}?category=Sail&limit=12`;
-
-
-        if (sortValue === "price-low") {
-            url += "&sort=price_asc";
-        }
-
-        if (sortValue === "price-high") {
-            url += "&sort=price_desc";
-        }
-
-        if (sortValue === "length-short") {
-            url += "&sort=length_asc";
-        }
-
-        if (sortValue === "length-long") {
-            url += "&sort=length_desc";
-        }
-
-
-        console.log("REAL BOAT API:", url);
-
-
-        const response =
-            await fetch(url);
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                `Boat API returned ${response.status}`
+        case "name":
+            sortedBoats.sort((a, b) =>
+                a.name.localeCompare(b.name)
             );
-        }
-
-
-        const data =
-            await response.json();
-
-
-        console.log(
-            "REAL BOAT API RESPONSE:",
-            data
-        );
-
-
-        let boats =
-            data.boats || [];
-
-
-        // Name sorting
-        if (sortValue === "name") {
-
-            boats.sort((a, b) => {
-
-                const nameA =
-                    a.title ||
-                    `${a.make || ""} ${a.model || ""}`;
-
-                const nameB =
-                    b.title ||
-                    `${b.make || ""} ${b.model || ""}`;
-
-                return nameA.localeCompare(nameB);
-
-            });
-        }
-
-
-        displayBoats(boats);
-
-
-    } catch (error) {
-
-        console.error(
-            "REAL BOAT API ERROR:",
-            error
-        );
-
-
-        boatContainer.innerHTML = `
-
-            <div style="
-                grid-column:1 / -1;
-                text-align:center;
-                padding:40px;
-            ">
-
-                <h3>
-                    Boat listings are currently unavailable.
-                </h3>
-
-                <p style="margin-top:10px;">
-                    API Error: ${error.message}
-                </p>
-
-            </div>
-
-        `;
-
+            break;
     }
-}
+
+    displayBoats(sortedBoats);
+});
 
 
 // ==========================================
-// BUTTONS
+// LOCATION SEARCH
 // ==========================================
 
-locationButton.addEventListener(
-    "click",
-    () => {
+locationButton.addEventListener("click", function () {
+
+    const location =
+        locationInput.value.trim();
+
+    if (location) {
+        getWeather(location);
+    }
+});
+
+
+locationInput.addEventListener("keydown", function (event) {
+
+    if (event.key === "Enter") {
 
         const location =
             locationInput.value.trim();
@@ -394,44 +275,8 @@ locationButton.addEventListener(
         if (location) {
             getWeather(location);
         }
-
     }
-);
-
-
-locationInput.addEventListener(
-    "keydown",
-    (event) => {
-
-        if (event.key === "Enter") {
-
-            const location =
-                locationInput.value.trim();
-
-            if (location) {
-                getWeather(location);
-            }
-
-        }
-
-    }
-);
-
-
-// ==========================================
-// SORTING
-// ==========================================
-
-sortSelect.addEventListener(
-    "change",
-    () => {
-
-        loadBoats(
-            sortSelect.value
-        );
-
-    }
-);
+});
 
 
 // ==========================================
@@ -440,4 +285,4 @@ sortSelect.addEventListener(
 
 getWeather("Miami");
 
-loadBoats("default");
+displayBoats(boats);
