@@ -1,202 +1,616 @@
 /* =====================================================
    BLUEWATER YACHTS
-   BOAT DATA
+
+   REAL SAILBOAT API
+   BoatListing.com.au
+
+   No API key required.
 ===================================================== */
-
-const boats = [
-    {
-        name: "Ocean Breeze 42",
-        price: 450000,
-        length: 42,
-        type: "Catamaran",
-        image: "https://yatcowpmedialibrary.nyc3.cdn.digitaloceanspaces.com/wp-content/uploads/2023/06/catamaran-guide-72-dixon-catamaran-2017.jpg"
-    },
-
-    {
-        name: "Blue Horizon 50",
-        price: 725000,
-        length: 50,
-        type: "Catamaran",
-        image: "https://www.davidwaltersyachts.com/hs-fs/hubfs/Hammer.jpg?height=2248&name=Hammer.jpg&width=3000"
-    },
-
-    {
-        name: "Sea Voyager 38",
-        price: 325000,
-        length: 38,
-        type: "Sailboat",
-        image: "https://keyassets.timeincuk.net/inspirewp/live/wp-content/uploads/sites/21/2021/10/YAW265.best_multihull.seawind_1600_3-630x394.jpg"
-    },
-
-    {
-        name: "Atlantic Explorer 55",
-        price: 950000,
-        length: 55,
-        type: "Sailboat",
-        image: "https://www.dreamyachtsales.com/app/uploads/2024/08/MAIN-dream-performance-program.jpg"
-    },
-
-    {
-        name: "Coral Dream 46",
-        price: 575000,
-        length: 46,
-        type: "Catamaran",
-        image: "https://www.catlante-catamarans.com/sites/default/files/bloc/home/catlante%20neo-Sailing%20%281%29.jpg"
-    },
-
-    {
-        name: "Pacific Star 60",
-        price: 1200000,
-        length: 60,
-        type: "Sailboat",
-        image: "https://upload.wikimedia.org/wikipedia/commons/9/91/Sunset_with_sail_boat_on_water_%28Unsplash%29.jpg"
-    }
-];
 
 
 /* =====================================================
-   DISPLAY BOATS
+   BOAT API
+===================================================== */
+
+const BOAT_API_URL =
+    "https://boatlisting.com.au/api/v1/boats";
+
+
+/* =====================================================
+   BOAT ELEMENTS
 ===================================================== */
 
 const boatContainer =
     document.getElementById("boat-container");
 
 
+const boatStatus =
+    document.getElementById("boat-status");
+
+
+const sortSelect =
+    document.getElementById("sort");
+
+
+/* =====================================================
+   STORE API BOATS
+===================================================== */
+
+let boats = [];
+
+
+
+/* =====================================================
+   FORMAT PRICE
+===================================================== */
+
+function formatPrice(boat) {
+
+    if (
+        boat.priceOnApplication ||
+        boat.price === null ||
+        boat.price === undefined
+    ) {
+
+        return "Price on Application";
+
+    }
+
+
+    return (
+        boat.currency || "AUD"
+    ) +
+    " " +
+    Number(boat.price).toLocaleString();
+
+}
+
+
+
+/* =====================================================
+   CONVERT METERS TO FEET
+===================================================== */
+
+function metersToFeet(meters) {
+
+    if (
+        meters === null ||
+        meters === undefined ||
+        isNaN(meters)
+    ) {
+
+        return null;
+
+    }
+
+
+    return (
+        Number(meters) * 3.28084
+    );
+
+}
+
+
+
+/* =====================================================
+   GET LOCATION
+===================================================== */
+
+function getBoatLocation(boat) {
+
+    if (!boat.location) {
+
+        return "Location unavailable";
+
+    }
+
+
+    const parts = [];
+
+
+    if (boat.location.city) {
+
+        parts.push(
+            boat.location.city
+        );
+
+    }
+
+
+    if (boat.location.state) {
+
+        parts.push(
+            boat.location.state
+        );
+
+    }
+
+
+    if (boat.location.country) {
+
+        parts.push(
+            boat.location.country
+        );
+
+    }
+
+
+    if (parts.length === 0) {
+
+        return "Location unavailable";
+
+    }
+
+
+    return parts.join(", ");
+
+}
+
+
+
+/* =====================================================
+   GET BOAT IMAGE
+===================================================== */
+
+function getBoatImage(boat) {
+
+    if (
+        boat.photos &&
+        boat.photos.length > 0
+    ) {
+
+        return boat.photos[0];
+
+    }
+
+
+    /*
+       Backup image in case a listing
+       does not contain a photograph.
+    */
+
+    return (
+        "https://images.unsplash.com/" +
+        "photo-1540946485063-a40da27545f8" +
+        "?auto=format&fit=crop&w=1000&q=80"
+    );
+
+}
+
+
+
+/* =====================================================
+   DISPLAY BOATS
+===================================================== */
+
 function displayBoats(boatList) {
 
     boatContainer.innerHTML = "";
 
-    boatList.forEach(function(boat) {
 
-        const boatCard =
-            document.createElement("div");
+    if (
+        !boatList ||
+        boatList.length === 0
+    ) {
 
-        boatCard.classList.add("boat-card");
+        boatContainer.innerHTML = `
 
-        boatCard.innerHTML = `
+            <div class="api-error">
 
-            <img
-                src="${boat.image}"
-                alt="${boat.name}"
-                class="boat-image"
-            >
-
-            <div class="boat-info">
-
-                <h3>${boat.name}</h3>
+                <h3>
+                    No sailboats found
+                </h3>
 
                 <p>
-                    <strong>Type:</strong>
-                    ${boat.type}
-                </p>
-
-                <p>
-                    <strong>Length:</strong>
-                    ${boat.length} ft
-                </p>
-
-                <p class="price">
-                    $${boat.price.toLocaleString()}
+                    The boating API did not return
+                    any sailboat listings.
                 </p>
 
             </div>
 
         `;
 
-        boatContainer.appendChild(boatCard);
+        return;
+
+    }
+
+
+
+    boatList.forEach(function(boat) {
+
+        const boatCard =
+            document.createElement("div");
+
+
+        boatCard.classList.add(
+            "boat-card"
+        );
+
+
+        const image =
+            getBoatImage(boat);
+
+
+        const lengthFeet =
+            metersToFeet(
+                boat.length_m
+            );
+
+
+        const lengthText =
+            lengthFeet !== null
+                ? `${lengthFeet.toFixed(1)} ft`
+                : "Length unavailable";
+
+
+        const boatType =
+            boat.boatType ||
+            boat.category ||
+            "Sailboat";
+
+
+        const year =
+            boat.year ||
+            "Year unavailable";
+
+
+        const location =
+            getBoatLocation(boat);
+
+
+        boatCard.innerHTML = `
+
+            <img
+                src="${image}"
+                alt="${boat.title || "Sailboat"}"
+                class="boat-image"
+                loading="lazy"
+                onerror="this.src='https://images.unsplash.com/photo-1540946485063-a40da27545f8?auto=format&fit=crop&w=1000&q=80'"
+            >
+
+
+            <div class="boat-info">
+
+                <h3>
+                    ${boat.title || "Sailboat"}
+                </h3>
+
+
+                <p>
+                    <strong>Type:</strong>
+                    ${boatType}
+                </p>
+
+
+                <p>
+                    <strong>Year:</strong>
+                    ${year}
+                </p>
+
+
+                <p>
+                    <strong>Length:</strong>
+                    ${lengthText}
+                </p>
+
+
+                <p>
+                    <strong>Location:</strong>
+                    ${location}
+                </p>
+
+
+                <p class="price">
+                    ${formatPrice(boat)}
+                </p>
+
+
+                ${
+                    boat.url
+                        ? `
+                            <a
+                                href="${boat.url}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="boat-link"
+                            >
+                                View Real Listing
+                            </a>
+                        `
+                        : ""
+                }
+
+            </div>
+
+        `;
+
+
+        boatContainer.appendChild(
+            boatCard
+        );
+
     });
+
 }
 
 
+
 /* =====================================================
-   SORTING
+   LOAD SAILBOATS FROM REAL API
 ===================================================== */
 
-const sortSelect =
-    document.getElementById("sort");
+async function loadBoats(sortOption = "default") {
 
+    boatStatus.textContent =
+        "Loading real sailboats from BoatListing.com.au...";
+
+
+    boatContainer.innerHTML = "";
+
+
+    try {
+
+        /*
+            Build the API URL.
+
+            category=Sail means we are specifically
+            asking the boating API for sailboats.
+
+            This is NOT our old hard-coded boat array.
+        */
+
+        const url =
+            new URL(
+                BOAT_API_URL
+            );
+
+
+        url.searchParams.set(
+            "category",
+            "Sail"
+        );
+
+
+        /*
+            Ask the API for 12 real listings.
+        */
+
+        url.searchParams.set(
+            "limit",
+            "12"
+        );
+
+
+
+        /* =================================================
+           API-CONNECTED SORTING
+        ================================================= */
+
+
+        if (
+            sortOption === "price-low"
+        ) {
+
+            /*
+                REAL API SORT
+
+                price_asc is provided by
+                BoatListing.com's API.
+            */
+
+            url.searchParams.set(
+                "sort",
+                "price_asc"
+            );
+
+        }
+
+
+        else if (
+            sortOption === "price-high"
+        ) {
+
+            /*
+                REAL API SORT
+            */
+
+            url.searchParams.set(
+                "sort",
+                "price_desc"
+            );
+
+        }
+
+
+        else if (
+            sortOption === "length-short"
+        ) {
+
+            /*
+                REAL API SORT
+            */
+
+            url.searchParams.set(
+                "sort",
+                "length_asc"
+            );
+
+        }
+
+
+        else if (
+            sortOption === "length-long"
+        ) {
+
+            /*
+                REAL API SORT
+            */
+
+            url.searchParams.set(
+                "sort",
+                "length_desc"
+            );
+
+        }
+
+
+
+        /*
+            Send request to the REAL boating API.
+        */
+
+        const response =
+            await fetch(
+                url.toString()
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Boat API request failed."
+            );
+
+        }
+
+
+        /*
+            Convert API response to JSON.
+        */
+
+        const data =
+            await response.json();
+
+
+        /*
+            Save the actual API results.
+
+            This is what our sorting feature works with.
+        */
+
+        boats =
+            data.boats || [];
+
+
+        /*
+            NAME SORT
+
+            The API does not advertise an A-Z name
+            sort, so we sort the real API results
+            in JavaScript.
+        */
+
+        if (
+            sortOption === "name"
+        ) {
+
+            boats.sort(
+                function(a, b) {
+
+                    return (
+                        (a.title || "")
+                            .localeCompare(
+                                b.title || ""
+                            )
+                    );
+
+                }
+            );
+
+        }
+
+
+        /*
+            Display the API results.
+        */
+
+        displayBoats(
+            boats
+        );
+
+
+        /*
+            Tell the user how many real listings
+            came from the API.
+        */
+
+        boatStatus.textContent =
+            `Showing ${boats.length} real sailboat listings from the BoatListing.com.au API.`;
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            "Boat API Error:",
+            error
+        );
+
+
+        boatStatus.textContent =
+            "Unable to load sailboat listings.";
+
+
+        boatContainer.innerHTML = `
+
+            <div class="api-error">
+
+                <h3>
+                    Sailboat listings are temporarily unavailable.
+                </h3>
+
+                <p>
+                    Please refresh the page and try again.
+                </p>
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+
+/* =====================================================
+   SORT EVENT
+===================================================== */
 
 sortSelect.addEventListener(
     "change",
     function() {
 
-        const sortValue =
+        const selectedSort =
             sortSelect.value;
 
-        let sortedBoats =
-            [...boats];
 
+        /*
+            IMPORTANT:
 
-        if (sortValue === "price-low") {
+            We call the REAL API again whenever
+            the user changes the sorting.
 
-            sortedBoats.sort(
-                function(a, b) {
-                    return a.price - b.price;
-                }
-            );
+            Therefore the sorting feature is
+            directly connected to the API.
+        */
 
-        }
+        loadBoats(
+            selectedSort
+        );
 
-
-        else if (sortValue === "price-high") {
-
-            sortedBoats.sort(
-                function(a, b) {
-                    return b.price - a.price;
-                }
-            );
-
-        }
-
-
-        else if (sortValue === "length-short") {
-
-            sortedBoats.sort(
-                function(a, b) {
-                    return a.length - b.length;
-                }
-            );
-
-        }
-
-
-        else if (sortValue === "length-long") {
-
-            sortedBoats.sort(
-                function(a, b) {
-                    return b.length - a.length;
-                }
-            );
-
-        }
-
-
-        else if (sortValue === "name") {
-
-            sortedBoats.sort(
-                function(a, b) {
-                    return a.name.localeCompare(b.name);
-                }
-            );
-
-        }
-
-
-        displayBoats(sortedBoats);
     }
 );
 
 
-/*
-    IMPORTANT:
-    Display the boats immediately.
 
-    This happens BEFORE the weather API runs,
-    so the boats will still appear even if
-    the API has an error.
-*/
+/* =====================================================
+   LOAD REAL SAILBOATS WHEN PAGE OPENS
+===================================================== */
 
-displayBoats(boats);
+loadBoats();
+
 
 
 /* =====================================================
@@ -204,25 +618,40 @@ displayBoats(boats);
 ===================================================== */
 
 const locationInput =
-    document.getElementById("location-input");
+    document.getElementById(
+        "location-input"
+    );
+
 
 const locationButton =
-    document.getElementById("location-button");
+    document.getElementById(
+        "location-button"
+    );
+
 
 const weatherStatus =
-    document.getElementById("weather-status");
+    document.getElementById(
+        "weather-status"
+    );
+
 
 const weatherLocation =
-    document.getElementById("weather-location");
+    document.getElementById(
+        "weather-location"
+    );
+
 
 
 /* =====================================================
    WIND DIRECTION
 ===================================================== */
 
-function getWindDirection(degrees) {
+function getWindDirection(
+    degrees
+) {
 
     const directions = [
+
         "N",
         "NE",
         "E",
@@ -231,20 +660,29 @@ function getWindDirection(degrees) {
         "SW",
         "W",
         "NW"
+
     ];
 
+
     const index =
-        Math.round(degrees / 45) % 8;
+        Math.round(
+            degrees / 45
+        ) % 8;
+
 
     return directions[index];
+
 }
+
 
 
 /* =====================================================
    WEATHER DESCRIPTION
 ===================================================== */
 
-function getWeatherDescription(code) {
+function getWeatherDescription(
+    code
+) {
 
     const descriptions = {
 
@@ -292,15 +730,23 @@ function getWeatherDescription(code) {
 
     };
 
-    return descriptions[code] || "Unknown";
+
+    return (
+        descriptions[code] ||
+        "Unknown"
+    );
+
 }
+
 
 
 /* =====================================================
    GET WEATHER FOR ANY LOCATION
 ===================================================== */
 
-async function getWeatherForLocation(location) {
+async function getWeatherForLocation(
+    location
+) {
 
     weatherStatus.textContent =
         "Finding location...";
@@ -310,8 +756,7 @@ async function getWeatherForLocation(location) {
 
         /*
             STEP 1:
-            Use Open-Meteo's geocoding API
-            to find the latitude and longitude.
+            Open-Meteo Geocoding API
         */
 
         const geocodingURL =
@@ -324,7 +769,9 @@ async function getWeatherForLocation(location) {
 
 
         const geocodingResponse =
-            await fetch(geocodingURL);
+            await fetch(
+                geocodingURL
+            );
 
 
         if (!geocodingResponse.ok) {
@@ -340,10 +787,6 @@ async function getWeatherForLocation(location) {
             await geocodingResponse.json();
 
 
-        /*
-            Make sure the API found something.
-        */
-
         if (
             !geocodingData.results ||
             geocodingData.results.length === 0
@@ -356,10 +799,6 @@ async function getWeatherForLocation(location) {
         }
 
 
-        /*
-            Get the first matching location.
-        */
-
         const place =
             geocodingData.results[0];
 
@@ -367,14 +806,15 @@ async function getWeatherForLocation(location) {
         const latitude =
             place.latitude;
 
+
         const longitude =
             place.longitude;
 
 
+
         /*
             STEP 2:
-            Use those coordinates with the
-            Open-Meteo weather API.
+            Open-Meteo Weather API
         */
 
         weatherStatus.textContent =
@@ -399,7 +839,9 @@ async function getWeatherForLocation(location) {
 
 
         const weatherResponse =
-            await fetch(weatherURL);
+            await fetch(
+                weatherURL
+            );
 
 
         if (!weatherResponse.ok) {
@@ -419,56 +861,67 @@ async function getWeatherForLocation(location) {
             weatherData.current;
 
 
+
         /* =================================================
-           UPDATE THE WEATHER CARDS
+           UPDATE WEATHER
         ================================================= */
 
 
         document.getElementById(
             "temperature"
         ).textContent =
+
             Math.round(
                 current.temperature_2m
-            ) + "°F";
+            ) +
+            "°F";
+
 
 
         document.getElementById(
             "wind-speed"
         ).textContent =
+
             Math.round(
                 current.wind_speed_10m
-            ) + " knots";
+            ) +
+            " knots";
+
 
 
         document.getElementById(
             "wind-direction"
         ).textContent =
+
             getWindDirection(
                 current.wind_direction_10m
             );
 
 
+
         document.getElementById(
             "wind-gusts"
         ).textContent =
+
             Math.round(
                 current.wind_gusts_10m
-            ) + " knots";
+            ) +
+            " knots";
+
 
 
         document.getElementById(
             "conditions"
         ).textContent =
+
             getWeatherDescription(
                 current.weather_code
             );
 
 
-        /*
-            Display the location the user searched.
-        */
 
         weatherLocation.textContent =
+
             "📍 " +
             place.name +
             ", " +
@@ -478,8 +931,8 @@ async function getWeatherForLocation(location) {
         weatherStatus.textContent =
             "Live sailing data retrieved from Open-Meteo.";
 
-
     }
+
 
     catch (error) {
 
@@ -497,8 +950,9 @@ async function getWeatherForLocation(location) {
 }
 
 
+
 /* =====================================================
-   CHECK CONDITIONS BUTTON
+   WEATHER BUTTON
 ===================================================== */
 
 locationButton.addEventListener(
@@ -509,12 +963,15 @@ locationButton.addEventListener(
             locationInput.value.trim();
 
 
-        if (location === "") {
+        if (
+            location === ""
+        ) {
 
             weatherStatus.textContent =
                 "Please enter a location.";
 
             return;
+
         }
 
 
@@ -526,26 +983,32 @@ locationButton.addEventListener(
 );
 
 
+
 /* =====================================================
-   PRESS ENTER TO SEARCH
+   WEATHER ENTER KEY
 ===================================================== */
 
 locationInput.addEventListener(
     "keydown",
     function(event) {
 
-        if (event.key === "Enter") {
+        if (
+            event.key === "Enter"
+        ) {
 
             const location =
                 locationInput.value.trim();
 
 
-            if (location === "") {
+            if (
+                location === ""
+            ) {
 
                 weatherStatus.textContent =
                     "Please enter a location.";
 
                 return;
+
             }
 
 
@@ -559,8 +1022,11 @@ locationInput.addEventListener(
 );
 
 
+
 /* =====================================================
-   LOAD MIAMI WHEN THE PAGE OPENS
+   LOAD MIAMI WEATHER
 ===================================================== */
 
-getWeatherForLocation("Miami");
+getWeatherForLocation(
+    "Miami"
+);
