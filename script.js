@@ -44,7 +44,7 @@ const boats = [
         price: 1200000,
         length: 60,
         type: "Sailboat",
-        image: "https://www.wamayachts.com/wp-content/uploads/2025/10/Odisea-64.jpg"
+       image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80"
     }
 ];
 
