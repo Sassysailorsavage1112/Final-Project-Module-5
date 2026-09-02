@@ -1,23 +1,38 @@
-export default async function handler(req, res) {
-    try {
-        const response = await fetch(
-            "https://boatlisting.com.au/api/v1/boats?category=Sail&limit=12"
-        );
+export default {
+    async fetch(request) {
 
-        if (!response.ok) {
-            throw new Error(`BoatListing returned ${response.status}`);
+        try {
+
+            const response = await fetch(
+                "https://boatlisting.com.au/api/v1/boats?category=Sail&limit=12"
+            );
+
+            const data = await response.json();
+
+            return new Response(
+                JSON.stringify(data),
+                {
+                    status: response.status,
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
+
+        } catch (error) {
+
+            return new Response(
+                JSON.stringify({
+                    error: "Could not connect to BoatListing",
+                    message: error.message
+                }),
+                {
+                    status: 500,
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
         }
-
-        const data = await response.json();
-
-        res.status(200).json(data);
-
-    } catch (error) {
-        console.error(error);
-
-        res.status(500).json({
-            error: "Boat API failed",
-            message: error.message
-        });
     }
-}
+};
