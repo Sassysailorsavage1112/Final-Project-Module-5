@@ -3,9 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Bluewater Yachts</title>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    
+
+    <header>
+        <h1>Bluewater Yachts</h1>
+        <p>Premium Catamarans & Bluewater Sailboats</p>
+    </header>
+
+    <main>
+
+        <div class="catalog-header">
+            <h2>Our Fleet</h2>
+
+            <label for="sort">Sort by:</label>
+
+            <select id="sort">
+                <option value="default">Featured</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="length-short">Length: Short to Long</option>
+                <option value="length-long">Length: Long to Short</option>
+                <option value="name">Name: A to Z</option>
+            </select>
+        </div>
+
+        <div id="boat-container" class="boat-grid">
+            <!-- Boats will be added by JavaScript -->
+        </div>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Bluewater Yachts | School Project</p>
+    </footer>
+
+    <script src="script.js"></script>
+
 </body>
 </html>
