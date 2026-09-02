@@ -1,521 +1,402 @@
-// ==========================================
+// ===============================
 // BLUEWATER YACHTS
-// ==========================================
+// Real BoatListing API + Weather
+// ===============================
 
-// ==========================================
-// WEATHER API
-// ==========================================
 
-const locationInput = document.getElementById("location-input");
-const locationButton = document.getElementById("location-button");
+// ===============================
+// BOAT FLEET
+// ===============================
 
-function getWindDirection(degrees) {
-    const directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
-    return directions[Math.round(degrees / 45) % 8];
+const boatContainer = document.getElementById("boat-container");
+const sortSelect = document.getElementById("sort");
+
+
+// Convert API boat data into our website cards
+function displayBoats(boats) {
+
+    if (!boatContainer) return;
+
+    if (!boats || boats.length === 0) {
+        boatContainer.innerHTML = `
+            <p class="no-boats">
+                No boats were found for this selection.
+            </p>
+        `;
+        return;
+    }
+
+    boatContainer.innerHTML = boats.map(boat => {
+
+        const price = boat.price
+            ? new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: boat.currency || "USD",
+                maximumFractionDigits: 0
+            }).format(boat.price)
+            : "Price Upon Request";
+
+        const location = boat.location
+            ? [
+                boat.location.city,
+                boat.location.state,
+                boat.location.country
+            ].filter(Boolean).join(", ")
+            : "Location unavailable";
+
+        const image = boat.photos && boat.photos.length > 0
+            ? boat.photos[0]
+            : "https://images.unsplash.com/photo-1540946485063-a40da27545f8?auto=format&fit=crop&w=1200&q=80";
+
+        return `
+            <article class="boat-card">
+
+                <img 
+                    src="${image}" 
+                    alt="${boat.title || "Sailboat"}"
+                    class="boat-image"
+                    onerror="this.src='https://images.unsplash.com/photo-1540946485063-a40da27545f8?auto=format&fit=crop&w=1200&q=80'"
+                >
+
+                <div class="boat-info">
+
+                    <h3>${boat.title || "Sailboat"}</h3>
+
+                    <p class="boat-price">
+                        ${price}
+                    </p>
+
+                    <div class="boat-details">
+
+                        <span>
+                            <strong>Year:</strong>
+                            ${boat.year || "N/A"}
+                        </span>
+
+                        <span>
+                            <strong>Length:</strong>
+                            ${boat.length_m ? boat.length_m + " m" : "N/A"}
+                        </span>
+
+                        <span>
+                            <strong>Type:</strong>
+                            ${boat.boatType || "Sailboat"}
+                        </span>
+
+                        <span>
+                            <strong>Location:</strong>
+                            ${location}
+                        </span>
+
+                    </div>
+
+                    <a 
+                        href="${boat.url || "#"}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="boat-button"
+                    >
+                        View Listing
+                    </a>
+
+                </div>
+
+            </article>
+        `;
+
+    }).join("");
 }
 
-function getWeatherDescription(code) {
-    if (code === 0) return "Clear Sky";
-    if (code === 1 || code === 2) return "Partly Cloudy";
-    if (code === 3) return "Cloudy";
-    if (code >= 45 && code <= 48) return "Fog";
-    if (code >= 51 && code <= 57) return "Drizzle";
-    if (code >= 61 && code <= 67) return "Rain";
-    if (code >= 71 && code <= 77) return "Snow";
-    if (code >= 80 && code <= 82) return "Rain Showers";
-    if (code >= 85 && code <= 86) return "Snow Showers";
-    if (code >= 95) return "Thunderstorm";
 
-    return "Unknown";
-}
+// ===============================
+// LOAD REAL BOATS FROM API
+// ===============================
 
-async function getWeather(location) {
+async function loadBoats(sort = "") {
 
-    const status =
-        document.getElementById("weather-status");
+    if (!boatContainer) return;
 
-    status.textContent = "Finding location...";
+    boatContainer.innerHTML = `
+        <p class="loading">
+            Loading available yachts...
+        </p>
+    `;
 
     try {
 
+        let url = "/api/boat?category=Sail&limit=12";
+
+        // BoatListing API supports these sorting options
+        if (sort === "price-low") {
+            url += "&sort=price_asc";
+        }
+
+        if (sort === "price-high") {
+            url += "&sort=price_desc";
+        }
+
+        if (sort === "length-short") {
+            url += "&sort=length_asc";
+        }
+
+        if (sort === "length-long") {
+            url += "&sort=length_desc";
+        }
+
+        if (sort === "year-new") {
+            url += "&sort=year_desc";
+        }
+
+        if (sort === "year-old") {
+            url += "&sort=year_asc";
+        }
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(`Boat API returned ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        displayBoats(data.boats);
+
+    } catch (error) {
+
+        console.error("Boat API Error:", error);
+
+        boatContainer.innerHTML = `
+            <div class="api-error">
+                <h3>Fleet temporarily unavailable</h3>
+                <p>
+                    We couldn't load the current yacht inventory.
+                    Please try again shortly.
+                </p>
+            </div>
+        `;
+    }
+}
+
+
+// ===============================
+// SORTING
+// ===============================
+
+if (sortSelect) {
+
+    sortSelect.addEventListener("change", function () {
+        loadBoats(this.value);
+    });
+
+}
+
+
+// Load real boats when page opens
+loadBoats();
+
+
+// ===============================
+// WORLDWIDE WEATHER
+// ===============================
+
+const weatherForm = document.getElementById("weather-form");
+const locationInput = document.getElementById("location-input");
+const weatherResult = document.getElementById("weather-result");
+
+
+async function getWeather(location) {
+
+    if (!weatherResult) return;
+
+    weatherResult.innerHTML = `
+        <p>Finding weather for ${location}...</p>
+    `;
+
+    try {
+
+        // Worldwide location search
         const geoResponse = await fetch(
             `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`
         );
 
+        if (!geoResponse.ok) {
+            throw new Error("Location search failed");
+        }
+
         const geoData = await geoResponse.json();
 
-        if (
-            !geoData.results ||
-            geoData.results.length === 0
-        ) {
+        if (!geoData.results || geoData.results.length === 0) {
             throw new Error("Location not found");
         }
 
         const place = geoData.results[0];
 
+        const latitude = place.latitude;
+        const longitude = place.longitude;
+
+        // Worldwide weather
         const weatherResponse = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m&temperature_unit=fahrenheit&wind_speed_unit=kn`
+            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&temperature_unit=fahrenheit`
         );
 
-        const weatherData =
-            await weatherResponse.json();
+        if (!weatherResponse.ok) {
+            throw new Error("Weather request failed");
+        }
 
-        const current =
-            weatherData.current;
+        const weatherData = await weatherResponse.json();
 
-        document.getElementById(
-            "weather-location"
-        ).textContent =
-            `📍 ${place.name}, ${place.country}`;
+        const current = weatherData.current;
 
-        document.getElementById(
-            "temperature"
-        ).textContent =
-            `${Math.round(current.temperature_2m)}°F`;
-
-        document.getElementById(
-            "wind-speed"
-        ).textContent =
-            `${Math.round(current.wind_speed_10m)} knots`;
-
-        document.getElementById(
-            "wind-direction"
-        ).textContent =
-            `${getWindDirection(current.wind_direction_10m)} (${Math.round(current.wind_direction_10m)}°)`;
-
-        document.getElementById(
-            "wind-gusts"
-        ).textContent =
-            `${Math.round(current.wind_gusts_10m)} knots`;
-
-        document.getElementById(
-            "conditions"
-        ).textContent =
-            getWeatherDescription(
-                current.weather_code
-            );
-
-        status.textContent =
-            "Current conditions loaded.";
-
-    } catch (error) {
-
-        console.error(
-            "Weather error:",
-            error
+        const temperature = Math.round(current.temperature_2m);
+        const windSpeed = Math.round(current.wind_speed_10m);
+        const windGusts = Math.round(current.wind_gusts_10m);
+        const windDirection = getWindDirection(
+            current.wind_direction_10m
         );
 
-        status.textContent =
-            "Unable to find weather for that location.";
-    }
-}
+        const condition = getWeatherDescription(
+            current.weather_code
+        );
 
+        weatherResult.innerHTML = `
+            <div class="weather-card">
 
-// ==========================================
-// REAL BOAT API
-// ==========================================
+                <h3>
+                    ${place.name}${place.country ? ", " + place.country : ""}
+                </h3>
 
-// IMPORTANT:
-// Your Vercel API file is:
-// api/boat.js
-//
-// Therefore the endpoint is:
-// /api/boat
-
-const BOAT_API = "/api/boat";
-
-const boatContainer =
-    document.getElementById("boat-container");
-
-const sortSelect =
-    document.getElementById("sort");
-
-
-// ==========================================
-// DISPLAY REAL API BOATS
-// ==========================================
-
-function displayBoats(boats) {
-
-    boatContainer.innerHTML = "";
-
-    if (
-        !boats ||
-        boats.length === 0
-    ) {
-
-        boatContainer.innerHTML = `
-            <p style="
-                grid-column: 1 / -1;
-                text-align: center;
-                padding: 40px;
-            ">
-                No sailboats were found.
-            </p>
-        `;
-
-        return;
-    }
-
-
-    boats.forEach((boat) => {
-
-        const card =
-            document.createElement("div");
-
-        card.className =
-            "boat-card";
-
-
-        const boatName =
-            boat.title ||
-            `${boat.make || ""} ${boat.model || ""}`.trim() ||
-            "Sailboat";
-
-
-        let image = "";
-
-        if (
-            Array.isArray(boat.photos) &&
-            boat.photos.length > 0
-        ) {
-
-            image = boat.photos[0];
-
-        }
-
-
-        let price =
-            "Price on Application";
-
-        if (
-            boat.price !== null &&
-            boat.price !== undefined &&
-            boat.price !== ""
-        ) {
-
-            price =
-                `${boat.currency || ""} ${Number(
-                    boat.price
-                ).toLocaleString()}`;
-
-        }
-
-
-        const length =
-            boat.length_m
-                ? `${boat.length_m} m`
-                : "N/A";
-
-
-        card.innerHTML = `
-
-            ${
-                image
-                    ? `
-                        <img
-                            class="boat-image"
-                            src="${image}"
-                            alt="${boatName}"
-                        >
-                    `
-                    : `
-                        <div
-                            class="boat-image"
-                            style="
-                                display:flex;
-                                align-items:center;
-                                justify-content:center;
-                                background:#e9eef1;
-                                color:#52636d;
-                            "
-                        >
-                            Photo unavailable
-                        </div>
-                    `
-            }
-
-            <div class="boat-info">
-
-                <h3>${boatName}</h3>
-
-                <p>
-                    <strong>Make:</strong>
-                    ${boat.make || "N/A"}
+                <p class="weather-condition">
+                    ${condition}
                 </p>
 
-                <p>
-                    <strong>Model:</strong>
-                    ${boat.model || "N/A"}
+                <p class="weather-temperature">
+                    ${temperature}°F
                 </p>
 
-                <p>
-                    <strong>Year:</strong>
-                    ${boat.year || "N/A"}
-                </p>
+                <div class="weather-details">
 
-                <p>
-                    <strong>Length:</strong>
-                    ${length}
-                </p>
+                    <span>
+                        Wind:
+                        <strong>${windSpeed} kn</strong>
+                    </span>
 
-                <p>
-                    <strong>Location:</strong>
-                    ${boat.location || "N/A"}
-                </p>
+                    <span>
+                        Gusts:
+                        <strong>${windGusts} kn</strong>
+                    </span>
 
-                <p class="price">
-                    ${price}
-                </p>
+                    <span>
+                        Direction:
+                        <strong>${windDirection}</strong>
+                    </span>
 
-                ${
-                    boat.url
-                        ? `
-                            <a
-                                href="${boat.url}"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                View Listing →
-                            </a>
-                        `
-                        : ""
-                }
+                </div>
 
             </div>
         `;
 
+    } catch (error) {
 
-        boatContainer.appendChild(card);
+        console.error("Weather Error:", error);
+
+        weatherResult.innerHTML = `
+            <p>
+                We couldn't find weather for that location.
+                Please try another city or country.
+            </p>
+        `;
+    }
+}
+
+
+// Weather form
+if (weatherForm) {
+
+    weatherForm.addEventListener("submit", function (event) {
+
+        event.preventDefault();
+
+        const location = locationInput
+            ? locationInput.value.trim()
+            : "";
+
+        if (location) {
+            getWeather(location);
+        }
 
     });
 
 }
 
 
-// ==========================================
-// LOAD REAL BOATS
-// ==========================================
+// ===============================
+// WEATHER HELPERS
+// ===============================
 
-async function loadBoats(
-    sortValue = "default"
-) {
+function getWindDirection(degrees) {
 
-    boatContainer.innerHTML = `
+    const directions = [
+        "N",
+        "NE",
+        "E",
+        "SE",
+        "S",
+        "SW",
+        "W",
+        "NW"
+    ];
 
-        <p style="
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 40px;
-        ">
-            Loading real sailboat listings...
-        </p>
+    const index = Math.round(degrees / 45) % 8;
 
-    `;
-
-
-    try {
-
-        const params =
-            new URLSearchParams();
-
-        params.set(
-            "category",
-            "Sail"
-        );
-
-        params.set(
-            "limit",
-            "12"
-        );
-
-
-        // ==========================================
-        // API SORTING
-        // ==========================================
-
-        if (
-            sortValue === "price-low"
-        ) {
-
-            params.set(
-                "sort",
-                "price_asc"
-            );
-
-        }
-
-
-        if (
-            sortValue === "price-high"
-        ) {
-
-            params.set(
-                "sort",
-                "price_desc"
-            );
-
-        }
-
-
-        if (
-            sortValue === "length-short"
-        ) {
-
-            params.set(
-                "sort",
-                "length_asc"
-            );
-
-        }
-
-
-        if (
-            sortValue === "length-long"
-        ) {
-
-            params.set(
-                "sort",
-                "length_desc"
-            );
-
-        }
-
-
-        const requestURL =
-            `${BOAT_API}?${params.toString()}`;
-
-
-        console.log(
-            "REAL BOAT API REQUEST:",
-            requestURL
-        );
-
-
-        const response =
-            await fetch(requestURL);
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                `Boat API returned ${response.status}`
-            );
-
-        }
-
-
-        const data =
-            await response.json();
-
-
-        console.log(
-            "REAL BOAT API RESPONSE:",
-            data
-        );
-
-
-        displayBoats(
-            data.boats || []
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "BOAT API ERROR:",
-            error
-        );
-
-
-        boatContainer.innerHTML = `
-
-            <div style="
-                grid-column: 1 / -1;
-                text-align: center;
-                padding: 40px;
-            ">
-
-                <h3>
-                    Boat listings are currently unavailable.
-                </h3>
-
-                <p style="margin-top:10px;">
-                    ${error.message}
-                </p>
-
-            </div>
-
-        `;
-
-    }
+    return directions[index];
 }
 
 
-// ==========================================
-// WEATHER SEARCH
-// ==========================================
+function getWeatherDescription(code) {
 
-locationButton.addEventListener(
-    "click",
-    function () {
+    const weatherCodes = {
 
-        const location =
-            locationInput.value.trim();
+        0: "Clear sky",
 
-        if (location) {
+        1: "Mainly clear",
+        2: "Partly cloudy",
+        3: "Overcast",
 
-            getWeather(location);
+        45: "Fog",
+        48: "Depositing rime fog",
 
-        }
+        51: "Light drizzle",
+        53: "Moderate drizzle",
+        55: "Dense drizzle",
 
-    }
-);
+        56: "Light freezing drizzle",
+        57: "Dense freezing drizzle",
 
+        61: "Slight rain",
+        63: "Moderate rain",
+        65: "Heavy rain",
 
-locationInput.addEventListener(
-    "keydown",
-    function (event) {
+        66: "Light freezing rain",
+        67: "Heavy freezing rain",
 
-        if (
-            event.key === "Enter"
-        ) {
+        71: "Slight snow",
+        73: "Moderate snow",
+        75: "Heavy snow",
 
-            const location =
-                locationInput.value.trim();
+        77: "Snow grains",
 
-            if (location) {
+        80: "Slight rain showers",
+        81: "Moderate rain showers",
+        82: "Violent rain showers",
 
-                getWeather(location);
+        85: "Slight snow showers",
+        86: "Heavy snow showers",
 
-            }
+        95: "Thunderstorm",
+        96: "Thunderstorm with slight hail",
+        99: "Thunderstorm with heavy hail"
 
-        }
+    };
 
-    }
-);
-
-
-// ==========================================
-// SORTING
-// ==========================================
-
-sortSelect.addEventListener(
-    "change",
-    function () {
-
-        loadBoats(
-            this.value
-        );
-
-    }
-);
-
-
-// ==========================================
-// START WEBSITE
-// ==========================================
-
-getWeather("Miami");
-
-loadBoats("default");
+    return weatherCodes[code] || "Weather conditions unavailable";
+}
