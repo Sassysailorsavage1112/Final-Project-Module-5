@@ -3,23 +3,18 @@
 // ==========================================
 
 // ==========================================
-// WEATHER
+// WEATHER API
 // ==========================================
 
 const locationInput = document.getElementById("location-input");
 const locationButton = document.getElementById("location-button");
 
 function getWindDirection(degrees) {
-    const directions = [
-        "N", "NE", "E", "SE",
-        "S", "SW", "W", "NW"
-    ];
-
+    const directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
     return directions[Math.round(degrees / 45) % 8];
 }
 
 function getWeatherDescription(code) {
-
     if (code === 0) return "Clear Sky";
     if (code === 1 || code === 2) return "Partly Cloudy";
     if (code === 3) return "Cloudy";
@@ -36,7 +31,8 @@ function getWeatherDescription(code) {
 
 async function getWeather(location) {
 
-    const status = document.getElementById("weather-status");
+    const status =
+        document.getElementById("weather-status");
 
     status.textContent = "Finding location...";
 
@@ -48,7 +44,10 @@ async function getWeather(location) {
 
         const geoData = await geoResponse.json();
 
-        if (!geoData.results || geoData.results.length === 0) {
+        if (
+            !geoData.results ||
+            geoData.results.length === 0
+        ) {
             throw new Error("Location not found");
         }
 
@@ -58,37 +57,56 @@ async function getWeather(location) {
             `https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m&temperature_unit=fahrenheit&wind_speed_unit=kn`
         );
 
-        const weatherData = await weatherResponse.json();
+        const weatherData =
+            await weatherResponse.json();
 
-        const current = weatherData.current;
+        const current =
+            weatherData.current;
 
-        document.getElementById("weather-location").textContent =
+        document.getElementById(
+            "weather-location"
+        ).textContent =
             `📍 ${place.name}, ${place.country}`;
 
-        document.getElementById("temperature").textContent =
+        document.getElementById(
+            "temperature"
+        ).textContent =
             `${Math.round(current.temperature_2m)}°F`;
 
-        document.getElementById("wind-speed").textContent =
+        document.getElementById(
+            "wind-speed"
+        ).textContent =
             `${Math.round(current.wind_speed_10m)} knots`;
 
-        document.getElementById("wind-direction").textContent =
+        document.getElementById(
+            "wind-direction"
+        ).textContent =
             `${getWindDirection(current.wind_direction_10m)} (${Math.round(current.wind_direction_10m)}°)`;
 
-        document.getElementById("wind-gusts").textContent =
+        document.getElementById(
+            "wind-gusts"
+        ).textContent =
             `${Math.round(current.wind_gusts_10m)} knots`;
 
-        document.getElementById("conditions").textContent =
-            getWeatherDescription(current.weather_code);
+        document.getElementById(
+            "conditions"
+        ).textContent =
+            getWeatherDescription(
+                current.weather_code
+            );
 
-        status.textContent = "Current conditions loaded.";
+        status.textContent =
+            "Current conditions loaded.";
 
     } catch (error) {
 
-        console.error("Weather error:", error);
+        console.error(
+            "Weather error:",
+            error
+        );
 
         status.textContent =
             "Unable to find weather for that location.";
-
     }
 }
 
@@ -98,8 +116,11 @@ async function getWeather(location) {
 // ==========================================
 
 // IMPORTANT:
-// Your file is api/boat.js
-// Therefore the Vercel endpoint is /api/boat
+// Your Vercel API file is:
+// api/boat.js
+//
+// Therefore the endpoint is:
+// /api/boat
 
 const BOAT_API = "/api/boat";
 
@@ -111,14 +132,17 @@ const sortSelect =
 
 
 // ==========================================
-// DISPLAY REAL BOATS
+// DISPLAY REAL API BOATS
 // ==========================================
 
 function displayBoats(boats) {
 
     boatContainer.innerHTML = "";
 
-    if (!boats || boats.length === 0) {
+    if (
+        !boats ||
+        boats.length === 0
+    ) {
 
         boatContainer.innerHTML = `
             <p style="
@@ -133,12 +157,14 @@ function displayBoats(boats) {
         return;
     }
 
+
     boats.forEach((boat) => {
 
         const card =
             document.createElement("div");
 
-        card.className = "boat-card";
+        card.className =
+            "boat-card";
 
 
         const boatName =
@@ -147,43 +173,20 @@ function displayBoats(boats) {
             "Sailboat";
 
 
-        let imageHTML = "";
+        let image = "";
 
         if (
-            boat.photos &&
             Array.isArray(boat.photos) &&
             boat.photos.length > 0
         ) {
 
-            imageHTML = `
-                <img
-                    class="boat-image"
-                    src="${boat.photos[0]}"
-                    alt="${boatName}"
-                >
-            `;
-
-        } else {
-
-            imageHTML = `
-                <div
-                    class="boat-image"
-                    style="
-                        display:flex;
-                        align-items:center;
-                        justify-content:center;
-                        background:#e9eef1;
-                        color:#52636d;
-                    "
-                >
-                    Photo unavailable
-                </div>
-            `;
+            image = boat.photos[0];
 
         }
 
 
-        let price = "Price on Application";
+        let price =
+            "Price on Application";
 
         if (
             boat.price !== null &&
@@ -207,7 +210,30 @@ function displayBoats(boats) {
 
         card.innerHTML = `
 
-            ${imageHTML}
+            ${
+                image
+                    ? `
+                        <img
+                            class="boat-image"
+                            src="${image}"
+                            alt="${boatName}"
+                        >
+                    `
+                    : `
+                        <div
+                            class="boat-image"
+                            style="
+                                display:flex;
+                                align-items:center;
+                                justify-content:center;
+                                background:#e9eef1;
+                                color:#52636d;
+                            "
+                        >
+                            Photo unavailable
+                        </div>
+                    `
+            }
 
             <div class="boat-info">
 
@@ -249,13 +275,6 @@ function displayBoats(boats) {
                                 href="${boat.url}"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                style="
-                                    display:inline-block;
-                                    margin-top:10px;
-                                    color:#0b6e99;
-                                    font-weight:bold;
-                                    text-decoration:none;
-                                "
                             >
                                 View Listing →
                             </a>
@@ -270,21 +289,24 @@ function displayBoats(boats) {
         boatContainer.appendChild(card);
 
     });
+
 }
 
 
 // ==========================================
-// LOAD BOATS FROM REAL API
+// LOAD REAL BOATS
 // ==========================================
 
-async function loadBoats(sortValue = "default") {
+async function loadBoats(
+    sortValue = "default"
+) {
 
     boatContainer.innerHTML = `
 
         <p style="
-            grid-column:1 / -1;
-            text-align:center;
-            padding:40px;
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
         ">
             Loading real sailboat listings...
         </p>
@@ -297,34 +319,81 @@ async function loadBoats(sortValue = "default") {
         const params =
             new URLSearchParams();
 
-        params.set("category", "Sail");
-        params.set("limit", "12");
+        params.set(
+            "category",
+            "Sail"
+        );
+
+        params.set(
+            "limit",
+            "12"
+        );
 
 
-        // These values are sent to
-        // the REAL BoatListing API.
+        // ==========================================
+        // API SORTING
+        // ==========================================
 
-        if (sortValue === "price-low") {
-            params.set("sort", "price_asc");
+        if (
+            sortValue === "price-low"
+        ) {
+
+            params.set(
+                "sort",
+                "price_asc"
+            );
+
         }
 
-        if (sortValue === "price-high") {
-            params.set("sort", "price_desc");
+
+        if (
+            sortValue === "price-high"
+        ) {
+
+            params.set(
+                "sort",
+                "price_desc"
+            );
+
         }
 
-        if (sortValue === "length-short") {
-            params.set("sort", "length_asc");
+
+        if (
+            sortValue === "length-short"
+        ) {
+
+            params.set(
+                "sort",
+                "length_asc"
+            );
+
         }
 
-        if (sortValue === "length-long") {
-            params.set("sort", "length_desc");
+
+        if (
+            sortValue === "length-long"
+        ) {
+
+            params.set(
+                "sort",
+                "length_desc"
+            );
+
         }
+
+
+        const requestURL =
+            `${BOAT_API}?${params.toString()}`;
+
+
+        console.log(
+            "REAL BOAT API REQUEST:",
+            requestURL
+        );
 
 
         const response =
-            await fetch(
-                `${BOAT_API}?${params.toString()}`
-            );
+            await fetch(requestURL);
 
 
         if (!response.ok) {
@@ -341,7 +410,7 @@ async function loadBoats(sortValue = "default") {
 
 
         console.log(
-            "REAL BOAT API:",
+            "REAL BOAT API RESPONSE:",
             data
         );
 
@@ -354,7 +423,7 @@ async function loadBoats(sortValue = "default") {
     } catch (error) {
 
         console.error(
-            "Boat API error:",
+            "BOAT API ERROR:",
             error
         );
 
@@ -362,9 +431,9 @@ async function loadBoats(sortValue = "default") {
         boatContainer.innerHTML = `
 
             <div style="
-                grid-column:1 / -1;
-                text-align:center;
-                padding:40px;
+                grid-column: 1 / -1;
+                text-align: center;
+                padding: 40px;
             ">
 
                 <h3>
@@ -384,18 +453,20 @@ async function loadBoats(sortValue = "default") {
 
 
 // ==========================================
-// LOCATION SEARCH
+// WEATHER SEARCH
 // ==========================================
 
 locationButton.addEventListener(
     "click",
-    () => {
+    function () {
 
         const location =
             locationInput.value.trim();
 
         if (location) {
+
             getWeather(location);
+
         }
 
     }
@@ -404,15 +475,19 @@ locationButton.addEventListener(
 
 locationInput.addEventListener(
     "keydown",
-    (event) => {
+    function (event) {
 
-        if (event.key === "Enter") {
+        if (
+            event.key === "Enter"
+        ) {
 
             const location =
                 locationInput.value.trim();
 
             if (location) {
+
                 getWeather(location);
+
             }
 
         }
@@ -427,10 +502,10 @@ locationInput.addEventListener(
 
 sortSelect.addEventListener(
     "change",
-    () => {
+    function () {
 
         loadBoats(
-            sortSelect.value
+            this.value
         );
 
     }
