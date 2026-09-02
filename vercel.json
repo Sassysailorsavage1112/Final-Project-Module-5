@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/boats",
-      "destination": "https://boatlisting.com.au/api/v1/boats"
+      "destination": "/api/boats.js"
     }
   ]
 }
