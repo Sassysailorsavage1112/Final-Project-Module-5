@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -10,101 +9,119 @@
 
 <body>
 
-```
-<header>
-    <h1>Bluewater Yachts</h1>
-    <p>Premium Catamarans & Bluewater Sailboats</p>
-</header>
-
-<main>
-
-    <!-- LIVE WEATHER / API SECTION -->
-    <section class="weather-section">
-
-        <div class="weather-heading">
-            <h2>Live Sailing Conditions</h2>
-            <p>Current conditions for sailors and yacht enthusiasts</p>
+    <header>
+        <div class="header-content">
+            <h1>Bluewater Yachts</h1>
+            <p>Premium Catamarans & Bluewater Sailboats</p>
         </div>
+    </header>
 
-        <div id="weather-status">
-            Loading current conditions...
-        </div>
+    <main>
 
-        <div class="weather-grid">
+        <!-- WEATHER / API SECTION -->
+        <section class="weather-section">
 
-            <div class="weather-card">
-                <span class="weather-icon">🌡️</span>
-                <h3>Temperature</h3>
-                <p id="temperature">--</p>
+            <div class="weather-heading">
+                <h2>Live Sailing Conditions</h2>
+                <p>Check current sailing conditions anywhere in the world</p>
             </div>
 
-            <div class="weather-card">
-                <span class="weather-icon">💨</span>
-                <h3>Wind Speed</h3>
-                <p id="wind-speed">--</p>
+            <div class="location-search">
+                <input
+                    type="text"
+                    id="location-input"
+                    placeholder="Enter a city or location..."
+                    value="Miami"
+                >
+
+                <button id="location-button">
+                    Check Conditions
+                </button>
             </div>
 
-            <div class="weather-card">
-                <span class="weather-icon">🧭</span>
-                <h3>Wind Direction</h3>
-                <p id="wind-direction">--</p>
+            <div id="weather-status">
+                Loading current conditions...
             </div>
 
-            <div class="weather-card">
-                <span class="weather-icon">🌬️</span>
-                <h3>Wind Gusts</h3>
-                <p id="wind-gusts">--</p>
+            <p class="weather-location" id="weather-location">
+                📍 Miami, United States
+            </p>
+
+            <div class="weather-grid">
+
+                <div class="weather-card">
+                    <span class="weather-icon">🌡️</span>
+                    <h3>Temperature</h3>
+                    <p id="temperature">--</p>
+                </div>
+
+                <div class="weather-card">
+                    <span class="weather-icon">💨</span>
+                    <h3>Wind Speed</h3>
+                    <p id="wind-speed">--</p>
+                </div>
+
+                <div class="weather-card">
+                    <span class="weather-icon">🧭</span>
+                    <h3>Wind Direction</h3>
+                    <p id="wind-direction">--</p>
+                </div>
+
+                <div class="weather-card">
+                    <span class="weather-icon">🌬️</span>
+                    <h3>Wind Gusts</h3>
+                    <p id="wind-gusts">--</p>
+                </div>
+
+                <div class="weather-card">
+                    <span class="weather-icon">☁️</span>
+                    <h3>Conditions</h3>
+                    <p id="conditions">--</p>
+                </div>
+
             </div>
 
-            <div class="weather-card">
-                <span class="weather-icon">☁️</span>
-                <h3>Conditions</h3>
-                <p id="conditions">--</p>
+        </section>
+
+
+        <!-- YACHT FLEET -->
+        <section class="fleet-section">
+
+            <div class="fleet-heading">
+                <h2>Our Fleet</h2>
+                <p>Explore our selection of premium bluewater vessels</p>
             </div>
 
-        </div>
+            <div class="sort-container">
 
-        <p class="weather-location">
-            📍 Miami, Florida
-        </p>
+                <label for="sort">
+                    Sort by:
+                </label>
 
-    </section>
+                <select id="sort">
+                    <option value="default">Featured</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="length-short">Length: Shortest First</option>
+                    <option value="length-long">Length: Longest First</option>
+                    <option value="name">Name: A-Z</option>
+                </select>
 
+            </div>
 
-    <!-- BOAT CATALOG -->
-    <section class="fleet-section">
+            <div id="boat-container" class="boat-grid"></div>
 
-        <div class="catalog-header">
-            <h2>Our Fleet</h2>
+        </section>
 
-            <label for="sort">Sort by:</label>
-
-            <select id="sort">
-                <option value="default">Featured</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="length-short">Length: Short to Long</option>
-                <option value="length-long">Length: Long to Short</option>
-                <option value="name">Name: A to Z</option>
-            </select>
-        </div>
-
-        <div id="boat-container" class="boat-grid">
-            <!-- Boats are added by JavaScript -->
-        </div>
-
-    </section>
-
-</main>
+    </main>
 
 
-<footer>
-    <p>&copy; 2026 Bluewater Yachts | School Project</p>
-</footer>
+    <footer>
+        <p>© 2026 Bluewater Yachts | School Project</p>
+    </footer>
 
 
-<script src="script.js"></script>
-```
+    <script src="script.js"></script>
 
 </body>
 </html>
