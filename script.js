@@ -44,7 +44,7 @@ const boats = [
         price: 1200000,
         length: 60,
         type: "Sailboat",
-       image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80"
+       image: "https://upload.wikimedia.org/wikipedia/commons/9/91/Sunset_with_sail_boat_on_water_%28Unsplash%29.jpg"
     }
 ];
 
