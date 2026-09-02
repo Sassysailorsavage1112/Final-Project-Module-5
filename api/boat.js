@@ -3,11 +3,42 @@ export default {
 
         try {
 
-            const response = await fetch(
-                "https://boatlisting.com.au/api/v1/boats?category=Sail&limit=12"
+            const incomingURL = new URL(request.url);
+
+            const apiURL = new URL(
+                "https://boatlisting.com.au/api/v1/boats"
             );
 
+            // Send the parameters from your website
+            // to the real BoatListing API.
+
+            incomingURL.searchParams.forEach((value, key) => {
+                apiURL.searchParams.set(key, value);
+            });
+
+
+            // Default to sailboats if no category
+            // was provided.
+
+            if (!apiURL.searchParams.has("category")) {
+                apiURL.searchParams.set("category", "Sail");
+            }
+
+
+            // Default to 12 boats.
+
+            if (!apiURL.searchParams.has("limit")) {
+                apiURL.searchParams.set("limit", "12");
+            }
+
+
+            const response = await fetch(
+                apiURL.toString()
+            );
+
+
             const data = await response.json();
+
 
             return new Response(
                 JSON.stringify(data),
@@ -18,6 +49,7 @@ export default {
                     }
                 }
             );
+
 
         } catch (error) {
 
@@ -33,6 +65,8 @@ export default {
                     }
                 }
             );
+
         }
+
     }
 };
