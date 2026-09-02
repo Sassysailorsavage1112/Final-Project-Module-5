@@ -1,46 +1,50 @@
-// Our boat data
 const boats = [
     {
         name: "Ocean Breeze 42",
         price: 450000,
         length: 42,
         type: "Catamaran",
-        image: "https://images.unsplash.com/photo-1567899378494-47b22a2ae96a"
+        image: "https://yatcowpmedialibrary.nyc3.cdn.digitaloceanspaces.com/wp-content/uploads/2023/06/catamaran-guide-72-dixon-catamaran-2017.jpg"
     },
+
     {
         name: "Blue Horizon 50",
         price: 725000,
         length: 50,
         type: "Catamaran",
-        image: "https://images.unsplash.com/photo-1540946485063-a40da27545f8"
+        image: "https://www.davidwaltersyachts.com/hs-fs/hubfs/Hammer.jpg?height=2248&name=Hammer.jpg&width=3000"
     },
+
     {
         name: "Sea Voyager 38",
         price: 325000,
         length: 38,
         type: "Sailboat",
-        image: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21"
+        image: "https://keyassets.timeincuk.net/inspirewp/live/wp-content/uploads/sites/21/2021/10/YAW265.best_multihull.seawind_1600_3-630x394.jpg"
     },
+
     {
         name: "Atlantic Explorer 55",
         price: 950000,
         length: 55,
         type: "Sailboat",
-        image: "https://images.unsplash.com/photo-1500534623283-312aade485b7"
+        image: "https://www.dreamyachtsales.com/app/uploads/2024/08/MAIN-dream-performance-program.jpg"
     },
+
     {
         name: "Coral Dream 46",
         price: 575000,
         length: 46,
         type: "Catamaran",
-        image: "https://images.unsplash.com/photo-1494783367193-149034c05e8f"
+        image: "https://www.catlante-catamarans.com/sites/default/files/bloc/home/catlante%20neo-Sailing%20%281%29.jpg"
     },
+
     {
         name: "Pacific Star 60",
         price: 1200000,
         length: 60,
         type: "Sailboat",
-        image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee"
+        image: "https://www.wamayachts.com/wp-content/uploads/2025/10/Odisea-64.jpg"
     }
 ];
 
