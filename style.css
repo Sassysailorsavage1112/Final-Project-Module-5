@@ -4,12 +4,17 @@
     box-sizing: border-box;
 }
 
+
 body {
     font-family: Arial, Helvetica, sans-serif;
+
     background-color: #f4f8fb;
+
     color: #123047;
+
     line-height: 1.6;
 }
+
 
 
 /* =========================
@@ -24,20 +29,28 @@ header {
     );
 
     color: white;
+
     text-align: center;
+
     padding: 60px 20px;
 }
 
+
 .header-content h1 {
     font-size: 48px;
+
     margin-bottom: 10px;
+
     letter-spacing: 1px;
 }
 
+
 .header-content p {
     font-size: 20px;
+
     opacity: 0.9;
 }
+
 
 
 /* =========================
@@ -46,9 +59,12 @@ header {
 
 main {
     max-width: 1200px;
+
     margin: auto;
+
     padding: 40px 20px;
 }
+
 
 
 /* =========================
@@ -57,27 +73,36 @@ main {
 
 .weather-section {
     background: white;
+
     border-radius: 15px;
+
     padding: 35px;
+
     margin-bottom: 50px;
 
     box-shadow:
         0 5px 20px rgba(0, 0, 0, 0.08);
 }
 
+
 .weather-heading {
     text-align: center;
+
     margin-bottom: 25px;
 }
 
+
 .weather-heading h2 {
     font-size: 32px;
+
     margin-bottom: 8px;
 }
+
 
 .weather-heading p {
     color: #607d8b;
 }
+
 
 
 /* =========================
@@ -86,24 +111,31 @@ main {
 
 .location-search {
     display: flex;
+
     justify-content: center;
+
     gap: 10px;
+
     margin-bottom: 20px;
 }
 
+
 .location-search input {
     width: 400px;
+
     max-width: 100%;
 
     padding: 14px 16px;
 
     border: 1px solid #c8d6df;
+
     border-radius: 8px;
 
     font-size: 16px;
 
     outline: none;
 }
+
 
 .location-search input:focus {
     border-color: #0b6e99;
@@ -114,12 +146,15 @@ main {
     padding: 14px 22px;
 
     border: none;
+
     border-radius: 8px;
 
     background-color: #0b6e99;
+
     color: white;
 
     font-size: 16px;
+
     font-weight: bold;
 
     cursor: pointer;
@@ -127,9 +162,11 @@ main {
     transition: 0.2s;
 }
 
+
 .location-search button:hover {
     background-color: #084d6b;
 }
+
 
 
 /* =========================
@@ -138,20 +175,25 @@ main {
 
 #weather-status {
     text-align: center;
+
     margin: 15px 0;
 
     color: #607d8b;
+
     font-size: 14px;
 }
+
 
 .weather-location {
     text-align: center;
 
     font-size: 18px;
+
     font-weight: bold;
 
     margin-bottom: 25px;
 }
+
 
 
 /* =========================
@@ -167,6 +209,7 @@ main {
     gap: 15px;
 }
 
+
 .weather-card {
     background-color: #f1f7fa;
 
@@ -179,22 +222,31 @@ main {
     border: 1px solid #dce9ef;
 }
 
+
 .weather-icon {
     font-size: 32px;
+
     display: block;
+
     margin-bottom: 10px;
 }
 
+
 .weather-card h3 {
     font-size: 16px;
+
     margin-bottom: 8px;
 }
 
+
 .weather-card p {
     font-size: 20px;
+
     font-weight: bold;
+
     color: #0b6e99;
 }
+
 
 
 /* =========================
@@ -205,19 +257,25 @@ main {
     margin-bottom: 50px;
 }
 
+
 .fleet-heading {
     text-align: center;
+
     margin-bottom: 25px;
 }
 
+
 .fleet-heading h2 {
     font-size: 36px;
+
     margin-bottom: 8px;
 }
+
 
 .fleet-heading p {
     color: #607d8b;
 }
+
 
 
 /* =========================
@@ -226,17 +284,21 @@ main {
 
 .sort-container {
     display: flex;
+
     justify-content: flex-end;
+
     align-items: center;
 
     gap: 10px;
 
-    margin-bottom: 25px;
+    margin-bottom: 15px;
 }
+
 
 .sort-container label {
     font-weight: bold;
 }
+
 
 .sort-container select {
     padding: 10px 14px;
@@ -253,6 +315,23 @@ main {
 }
 
 
+
+/* =========================
+   BOAT API STATUS
+========================= */
+
+#boat-status {
+    text-align: center;
+
+    color: #607d8b;
+
+    font-size: 14px;
+
+    margin-bottom: 25px;
+}
+
+
+
 /* =========================
    BOAT GRID
 ========================= */
@@ -265,6 +344,7 @@ main {
 
     gap: 25px;
 }
+
 
 
 /* =========================
@@ -286,6 +366,7 @@ main {
         box-shadow 0.2s;
 }
 
+
 .boat-card:hover {
     transform: translateY(-5px);
 
@@ -293,18 +374,24 @@ main {
         0 10px 25px rgba(0, 0, 0, 0.12);
 }
 
+
 .boat-image {
     width: 100%;
+
     height: 220px;
 
     object-fit: cover;
 
     display: block;
+
+    background-color: #dce9ef;
 }
+
 
 .boat-info {
     padding: 20px;
 }
+
 
 .boat-info h3 {
     font-size: 22px;
@@ -314,11 +401,13 @@ main {
     color: #123047;
 }
 
+
 .boat-info p {
     margin-bottom: 5px;
 
     color: #607d8b;
 }
+
 
 .boat-info .price {
     margin-top: 15px;
@@ -329,6 +418,55 @@ main {
 
     color: #0b6e99;
 }
+
+
+.boat-link {
+    display: inline-block;
+
+    margin-top: 15px;
+
+    padding: 9px 14px;
+
+    border-radius: 7px;
+
+    background-color: #0b6e99;
+
+    color: white;
+
+    text-decoration: none;
+
+    font-weight: bold;
+
+    font-size: 14px;
+}
+
+
+.boat-link:hover {
+    background-color: #084d6b;
+}
+
+
+
+/* =========================
+   API ERROR
+========================= */
+
+.api-error {
+    background-color: #fff3f3;
+
+    border: 1px solid #f0caca;
+
+    border-radius: 10px;
+
+    padding: 20px;
+
+    text-align: center;
+
+    color: #8a3333;
+
+    grid-column: 1 / -1;
+}
+
 
 
 /* =========================
@@ -348,6 +486,7 @@ footer {
 }
 
 
+
 /* =========================
    MOBILE
 ========================= */
@@ -359,6 +498,7 @@ footer {
             repeat(2, 1fr);
     }
 
+
     .boat-grid {
         grid-template-columns:
             repeat(2, 1fr);
@@ -367,36 +507,45 @@ footer {
 }
 
 
+
 @media (max-width: 600px) {
 
     .header-content h1 {
         font-size: 36px;
     }
 
+
     .location-search {
         flex-direction: column;
     }
+
 
     .location-search input {
         width: 100%;
     }
 
+
     .location-search button {
         width: 100%;
     }
+
 
     .weather-grid {
         grid-template-columns:
             1fr;
     }
 
+
     .boat-grid {
         grid-template-columns:
             1fr;
     }
 
+
     .sort-container {
         justify-content: center;
+
+        flex-wrap: wrap;
     }
 
 }

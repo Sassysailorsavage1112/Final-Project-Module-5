@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Bluewater Yachts</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -16,17 +18,26 @@
         </div>
     </header>
 
+
     <main>
 
-        <!-- WEATHER / API SECTION -->
+        <!-- =========================================
+             WEATHER / API SECTION
+        ========================================== -->
+
         <section class="weather-section">
 
             <div class="weather-heading">
                 <h2>Live Sailing Conditions</h2>
-                <p>Check current sailing conditions anywhere in the world</p>
+
+                <p>
+                    Check current sailing conditions anywhere in the world
+                </p>
             </div>
 
+
             <div class="location-search">
+
                 <input
                     type="text"
                     id="location-input"
@@ -37,46 +48,107 @@
                 <button id="location-button">
                     Check Conditions
                 </button>
+
             </div>
+
 
             <div id="weather-status">
                 Loading current conditions...
             </div>
 
-            <p class="weather-location" id="weather-location">
+
+            <p
+                class="weather-location"
+                id="weather-location"
+            >
                 📍 Miami, United States
             </p>
+
 
             <div class="weather-grid">
 
                 <div class="weather-card">
-                    <span class="weather-icon">🌡️</span>
-                    <h3>Temperature</h3>
-                    <p id="temperature">--</p>
+
+                    <span class="weather-icon">
+                        🌡️
+                    </span>
+
+                    <h3>
+                        Temperature
+                    </h3>
+
+                    <p id="temperature">
+                        --
+                    </p>
+
                 </div>
 
-                <div class="weather-card">
-                    <span class="weather-icon">💨</span>
-                    <h3>Wind Speed</h3>
-                    <p id="wind-speed">--</p>
-                </div>
 
                 <div class="weather-card">
-                    <span class="weather-icon">🧭</span>
-                    <h3>Wind Direction</h3>
-                    <p id="wind-direction">--</p>
+
+                    <span class="weather-icon">
+                        💨
+                    </span>
+
+                    <h3>
+                        Wind Speed
+                    </h3>
+
+                    <p id="wind-speed">
+                        --
+                    </p>
+
                 </div>
 
-                <div class="weather-card">
-                    <span class="weather-icon">🌬️</span>
-                    <h3>Wind Gusts</h3>
-                    <p id="wind-gusts">--</p>
-                </div>
 
                 <div class="weather-card">
-                    <span class="weather-icon">☁️</span>
-                    <h3>Conditions</h3>
-                    <p id="conditions">--</p>
+
+                    <span class="weather-icon">
+                        🧭
+                    </span>
+
+                    <h3>
+                        Wind Direction
+                    </h3>
+
+                    <p id="wind-direction">
+                        --
+                    </p>
+
+                </div>
+
+
+                <div class="weather-card">
+
+                    <span class="weather-icon">
+                        🌬️
+                    </span>
+
+                    <h3>
+                        Wind Gusts
+                    </h3>
+
+                    <p id="wind-gusts">
+                        --
+                    </p>
+
+                </div>
+
+
+                <div class="weather-card">
+
+                    <span class="weather-icon">
+                        ☁️
+                    </span>
+
+                    <h3>
+                        Conditions
+                    </h3>
+
+                    <p id="conditions">
+                        --
+                    </p>
+
                 </div>
 
             </div>
@@ -84,13 +156,25 @@
         </section>
 
 
-        <!-- YACHT FLEET -->
+
+        <!-- =========================================
+             REAL SAILBOAT API FLEET
+        ========================================== -->
+
         <section class="fleet-section">
 
             <div class="fleet-heading">
-                <h2>Our Fleet</h2>
-                <p>Explore our selection of premium bluewater vessels</p>
+
+                <h2>
+                    Our Fleet
+                </h2>
+
+                <p>
+                    Explore real sailboats currently listed for sale
+                </p>
+
             </div>
+
 
             <div class="sort-container">
 
@@ -98,27 +182,66 @@
                     Sort by:
                 </label>
 
+
                 <select id="sort">
-                    <option value="default">Featured</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                    <option value="length-short">Length: Shortest First</option>
-                    <option value="length-long">Length: Longest First</option>
-                    <option value="name">Name: A-Z</option>
+
+                    <option value="default">
+                        Featured
+                    </option>
+
+                    <option value="price-low">
+                        Price: Low to High
+                    </option>
+
+                    <option value="price-high">
+                        Price: High to Low
+                    </option>
+
+                    <option value="length-short">
+                        Length: Shortest First
+                    </option>
+
+                    <option value="length-long">
+                        Length: Longest First
+                    </option>
+
+                    <option value="name">
+                        Name: A-Z
+                    </option>
+
                 </select>
 
             </div>
 
-            <div id="boat-container" class="boat-grid"></div>
+
+            <!-- API STATUS -->
+
+            <div id="boat-status">
+                Loading real sailboats...
+            </div>
+
+
+            <!-- BOATS FROM API APPEAR HERE -->
+
+            <div
+                id="boat-container"
+                class="boat-grid"
+            ></div>
 
         </section>
 
     </main>
 
 
+
     <footer>
-        <p>© 2026 Bluewater Yachts | School Project</p>
+
+        <p>
+            © 2026 Bluewater Yachts | School Project
+        </p>
+
     </footer>
+
 
 
     <script src="script.js"></script>
